@@ -159,6 +159,7 @@ class SteamPage():
     }
 
     platform_map = {
+        "pc": get_item("Q16338"),
         "win": get_item("Q1406"),
         "mac": get_item("Q14116"),
         "linux": get_item("Q388"),
@@ -388,7 +389,7 @@ class SteamPage():
         if match:
             return [developer.strip() for developer in re.findall(r"<a[^>]+>(.*?)</a>", match.group(1))]
         else:
-            raise []
+            return []
 
     def get_publishers(self):
         """Get publishers as a list of strings, for instance, ['Valve']."""
@@ -396,7 +397,7 @@ class SteamPage():
         if match:
             return [publisher.strip() for publisher in re.findall(r"<a[^>]+>(.*?)</a>", match.group(1))]
         else:
-            raise []
+            return []
 
     def get_platforms(self):
         """Get platforms as a list of strings: 'win', 'mac' or 'linux'."""
@@ -452,6 +453,13 @@ class SteamPage():
             result = [(language, []) for language, _ in result]
         return result
 
+    def get_metacritic_id(self):
+        """Get Metacritic slug (for instance, `game/pc/mosaic`), if stated."""
+        match = re.search(r"<a href=\"https://www\.metacritic\.com/(game/pc/[\-a-z0-9!+_()]+)(?:\?[^\"]+)\" target=\"_blank\">Read Critic Reviews</a>", self.html)
+        if match:
+            return match.group(1)
+        else:
+            return None
 
 
 class ItemProcessor():
@@ -557,6 +565,7 @@ class ItemProcessor():
         platforms = self.steam.get_platform_items()
         gamemodes = self.steam.get_gamemode_items()
         languages = self.steam.get_language_items()
+        metacritic = self.steam.get_metacritic_id()
 
         self.add_steam_qualifier("P400", platforms, "platform")
         self.add_claims_with_update("P437", [digital_distribution], "distribution format", get_source=self.generate_inferred_from_source)
@@ -574,6 +583,9 @@ class ItemProcessor():
         self.add_claims_with_update("P400", platforms, "platform", add_sources=True)
         self.add_claims_with_update("P404", gamemodes, "game mode", add_sources=True)
         self.add_claims_with_qualifiers("P407", "P518", languages, "language")
+        if metacritic:
+            data = (metacritic, [self.steam.platform_map["pc"]])
+            self.add_claims_with_qualifiers("P1712", "P400", [data], "Metacritic ID")
 
         print("{}: Item {} processed".format(self.steam.get_id(), self.item.title()))
         if output:

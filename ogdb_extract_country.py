@@ -121,6 +121,7 @@ def main():
         "Rumänien": pywikibot.ItemPage(repo, "Q218"),
         "Bulgarien": pywikibot.ItemPage(repo, "Q219"),
         "Kroatien": pywikibot.ItemPage(repo, "Q224"),
+        "Zypern": pywikibot.ItemPage(repo, "Q229"),
         "Georgien": pywikibot.ItemPage(repo, "Q230"),
         "Malta": pywikibot.ItemPage(repo, "Q233"),
         "Indonesien": pywikibot.ItemPage(repo, "Q252"),

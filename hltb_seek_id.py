@@ -45,7 +45,6 @@ def get_steam_id(hltb_slug):
         "Accept-Encoding": "none",
         "Accept-Language": "en-US,en;q=0.8",
         "Connection": "keep-alive",
-        "Cookie": "wants_mature_content=1;birthtime=470682001;lastagecheckage=1-0-1985;Steam_Language=english"
     }
     url = "https://howlongtobeat.com/game/{}".format(hltb_slug)
     for attempt_no in range(attempts):

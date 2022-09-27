@@ -47,7 +47,7 @@ def get_steam_id(hltb_slug):
         "Connection": "keep-alive",
         "Cookie": "wants_mature_content=1;birthtime=470682001;lastagecheckage=1-0-1985;Steam_Language=english"
     }
-    url = "https://howlongtobeat.com/game?id={}".format(hltb_slug)
+    url = "https://howlongtobeat.com/game/{}".format(hltb_slug)
     for attempt_no in range(attempts):
         try:
             request = urllib.request.Request(url, None, headers)
@@ -57,8 +57,8 @@ def get_steam_id(hltb_slug):
             if attempt_no == (attempts - 1):
                 raise error
 
-    # <strong><a class="text_red" href="http://store.steampowered.com/app/620/" rel="noopener" target="_blank">Steam</a></strong>
-    matches = re.findall(r"href=\"http://store\.steampowered\.com/app/(\d+)[/\"]", html)
+    # <strong><a class="text_red" href="https://store.steampowered.com/app/620/" rel="noreferrer" target="_blank">Steam</a></strong>
+    matches = re.findall(r"href=\"https://store\.steampowered\.com/app/(\d+)[/\"]", html)
     if len(matches) == 1:
         return matches[0]
     else:
@@ -66,7 +66,7 @@ def get_steam_id(hltb_slug):
 
 def get_search_results(query):
     query = re.sub(" [–—] ", " ", query)
-    return [entry.game_id for entry in HowLongToBeat(0.5).search(query)][:5]
+    return [str(entry.game_id) for entry in HowLongToBeat(0.5).search(query)][:5]
 
 def process_item(repo, item):
     if item.isRedirectPage():

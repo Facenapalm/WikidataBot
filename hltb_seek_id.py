@@ -65,7 +65,11 @@ def get_steam_id(hltb_slug):
 
 def get_search_results(query):
     query = re.sub(" [–—] ", " ", query)
-    return [str(entry.game_id) for entry in HowLongToBeat(0.5).search(query)][:5]
+    search_results = HowLongToBeat(0.5).search(query)
+    if search_results is None:
+        return []
+    else:
+        return [str(entry.game_id) for entry in search_results][:5]
 
 def process_item(repo, item):
     if item.isRedirectPage():

@@ -18,13 +18,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""
+Add platform (P400) qualifier to UVL game ID (P7555) claims.
 
+See also:
 
-# Add platform (P400) qualifier to UVL game ID (P7555) claims.
-# 
-# See also:
-# 
-#    https://www.wikidata.org/wiki/Wikidata:Database_reports/Constraint_violations/P7555#"Mandatory_Qualifiers"_violations
+   https://www.wikidata.org/wiki/Wikidata:Database_reports/Constraint_violations/P7555#"Mandatory_Qualifiers"_violations
+"""
 
 import pywikibot
 from pywikibot import pagegenerators as pg

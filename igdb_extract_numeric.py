@@ -18,13 +18,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""
+Extract IGDB numeric ID (P9043) based on IGDB ID (P5794).
 
+See also:
 
-# Extract IGDB numeric ID (P9043) based on IGDB ID (P5794).
-# 
-# See also:
-# 
-#    https://www.wikidata.org/wiki/Wikidata:Database_reports/Constraint_violations/P5794#"Mandatory_Qualifiers"_violations
+   https://www.wikidata.org/wiki/Wikidata:Database_reports/Constraint_violations/P5794#"Mandatory_Qualifiers"_violations
+"""
 
 import pywikibot
 from pywikibot import pagegenerators as pg

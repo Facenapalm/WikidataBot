@@ -18,13 +18,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""
+Extract Country of origin (P495) based on OGDB ID (P7564).
 
+See also:
 
-# Extract Country of origin (P495) based on OGDB ID (P7564).
-# 
-# See also:
-# 
-#    https://www.wikidata.org/wiki/Wikidata:Database_reports/Constraint_violations/P7564#Item_P495
+   https://www.wikidata.org/wiki/Wikidata:Database_reports/Constraint_violations/P7564#Item_P495
+"""
 
 import pywikibot
 from pywikibot import pagegenerators as pg

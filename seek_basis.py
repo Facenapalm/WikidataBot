@@ -50,7 +50,7 @@ class BaseSeekerBot:
     4. Optinally, if some of the parsed properties are missing in Wikidata item,
        add them as well.
 
-    This class implements the whole algorithm but __search() and __parse_entry()
+    This class implements the whole algorithm but search() and parse_entry()
     methods, which would have a different implementation for different external
     databases.
     """

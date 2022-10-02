@@ -18,33 +18,32 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""
+Extract various video game data from Steam based on Steam application ID (P1733):
+- platform (P400), both as a standalone claim and as a qualifier to Steam application ID (P1733)
+- publication date (P577), except for unpublished and early access games
+- game mode (P404), one of the following:
+    singleplayer (Q208850)
+    multiplayer (Q6895044)
+    co-op mode (Q1758804)
+- language of work or name (P407), with applies to part (P518) qualifier:
+    user interface (Q47146)
+    voice acting (Q22920017)
+    subtitle (Q204028)
 
+Script requires `input.txt` file with list of IDs of items to process (Qnnn)
+or Steam IDs to be included in newly created items (just number).
+Mixed input is supported, although the order of IDs might be altered.
 
-# Extract various video game data from Steam based on Steam application ID (P1733):
-# - platform (P400), both as a standalone claim and as a qualifier to Steam application ID (P1733)
-# - publication date (P577), except for unpublished and early access games
-# - game mode (P404), one of the following:
-#     singleplayer (Q208850)
-#     multiplayer (Q6895044)
-#     co-op mode (Q1758804)
-# - language of work or name (P407), with applies to part (P518) qualifier:
-#     user interface (Q47146)
-#     voice acting (Q22920017)
-#     subtitle (Q204028)
-# 
-# Script requires `input.txt` file with list of IDs of items to process (Qnnn)
-# or Steam IDs to be included in newly created items (just number).
-# Mixed input is supported, although the order of IDs might be altered.
-# 
-# A list of elements to process might be obtained from page:
-#
-#    https://www.wikidata.org/wiki/Wikidata:Database_reports/Constraint_violations/P1733
+A list of elements to process might be obtained from page:
+
+   https://www.wikidata.org/wiki/Wikidata:Database_reports/Constraint_violations/P1733
+"""
 
 import pywikibot
 from pywikibot.data.sparql import SparqlQuery
 import urllib.request
 import time
-import sys
 import re
 import random
 import argparse

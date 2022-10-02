@@ -24,16 +24,9 @@ instance, Steam application ID (P1733).
 Then use RAWG database to connect Wikidata item with other external IDs - for
 instance, Epic Games Store or Microsoft Store.
 
-Usage:
+To get started, type:
 
-    python seek_rawg_id.py input [base_property] [-limit LIMIT]
-
-input should be either a path to file with list of items (Qnnn), or a keyword "all"
-base_property is a Wikidata property that is used to match Wikidata item with RAWG
-entry (P1733 is used by default)
-LIMIT is a number of items to process if INPUT is "all"
-
-Script requires RAWG API key, place it at ./keys/rawg.key file.
+    python seek_rawg_id.py -h
 """
 
 import requests

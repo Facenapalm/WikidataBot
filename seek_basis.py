@@ -141,14 +141,16 @@ class BaseSeekerBot:
 
     def run(self):
         """Parse command line arguments and process items accordingly."""
+        parser_arguments = {}
+        parser_arguments["description"] = "Add {} ({}) based on matching property (second positional argument).".format(self.database_prop_label, self.database_prop)
+        if self.should_set_properties:
+            parser_arguments["description"] += " Then import data based on {}.".format(self.database_prop_label)
         if self.matching_prop_whitelist:
-            epilog = "Supported matching properties: {}".format(", ".join(sorted(self.matching_prop_whitelist)))
-        else:
-            epilog = None
+            parser_arguments["epilog"] = "Supported base properties: {}".format(", ".join(sorted(self.matching_prop_whitelist)))
 
-        parser = ArgumentParser(epilog=epilog)
+        parser = ArgumentParser(**parser_arguments)
         parser.add_argument("input", help="A path to the file with the list of IDs of items to process (Qnnn) or a keyword \"all\"")
-        parser.add_argument("base", nargs="?", help="A property to use to match Wikidata items with database entries")
+        parser.add_argument("base", nargs="?", help="A property to use to match Wikidata items with database entries. If ommited, defaults to \"{}\" ({})".format(self.matching_prop, self.matching_prop_label))
         parser.add_argument("-limit", "-l", type=int, default=0, help="A number of items to process (optional, only works with keyword \"all\")")
         args = parser.parse_args()
 
@@ -161,7 +163,6 @@ class BaseSeekerBot:
                 self.process_file(args.input)
         except Exception as error:
             print(error)
-            print("Add -h for more info.")
 
     # Virtual methods to be implemented in inherited classes.
 

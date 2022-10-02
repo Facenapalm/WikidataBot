@@ -21,12 +21,9 @@
 """
 Add HowLongToBeat ID (P2816) based on matching Steam application ID (P1733).
 
-Usage:
+To get started, type:
 
-    python seek_hltb_id.py input
-
-input should be either a path to file with list of items (Qnnn, one per line),
-or a keyword "all".
+    python seek_hltb_id.py -h
 """
 
 import re
@@ -41,6 +38,8 @@ class HLTBSeekerBot(BaseSeekerBot):
             database_prop="P2816",
             default_matching_prop="P1733",
             matching_prop_whitelist=["P1733"],
+
+            should_set_properties=False,
         )
 
     def search(self, query, max_results=5):

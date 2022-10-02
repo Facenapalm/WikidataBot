@@ -23,14 +23,9 @@ Add Lutris ID (P7597) based on matching external identifier (for instance,
 Steam application ID, P1733) and/or fill the item with other external IDs
 stated in Lutris database - for instance, IGDB, MobyGames or PCGamingWiki.
 
-Usage:
+To get started, type:
 
-    python seek_lutris_id.py input [base_property]
-
-input should be either a path to file with list of items (Qnnn, one per line),
-or a keyword "all".
-Base property is an external ID to seek a match for. If ommitted, it defaults
-to "P1733" (Steam application ID).
+    python seek_lutris_id.py -h
 """
 
 import urllib.parse

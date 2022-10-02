@@ -22,14 +22,9 @@
 Add Riot Pixels ID (P10393) based on matching external identifier (for
 instance, Steam application ID, P1733).
 
-Usage:
+To get started, type:
 
-    python riotpixels_seek_id.py input [base_property]
-
-input should a path to file with list of items (Qnnn, one per line), or a
-keyword "all".
-base_property is an external ID to seek a match for. If ommitted, it defaults
-to "P1733" (Steam application ID).
+    python riotpixels_seek_id.py -h
 """
 
 import re

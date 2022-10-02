@@ -112,7 +112,11 @@ class LutrisSeekerBot(BaseSeekerBot):
             "unpublished-filter": "on"
         }
         html = self.__get_html("https://lutris.net/games?" + urllib.parse.urlencode(params))
-        return re.findall(r"<div class=[\"']game-preview[\"']>\s+<a href=[\"']/games/([^\"']+)/\"", html)
+        results = re.findall(r"<div class=[\"']game-preview[\"']>\s+<a href=[\"']/games/([^\"']+)/\"", html)
+        if max_results:
+            return results[:max_results]
+        else:
+            return results
 
     def parse_entry(self, entry_id):
         html = self.__get_html("https://lutris.net/games/{}".format(entry_id))

@@ -43,13 +43,13 @@ class HLTBSeekerBot(BaseSeekerBot):
             matching_prop_whitelist=["P1733"],
         )
 
-    def search(self, query, max_results=None):
+    def search(self, query, max_results=5):
         query = re.sub(" [–—] ", " ", query)
         search_results = HowLongToBeat(0.5).search(query)
         if search_results is None:
             return []
         else:
-            return [str(entry.game_id) for entry in search_results][:5]
+            return [str(entry.game_id) for entry in search_results][:max_results]
 
     def parse_entry(self, entry_id):
         attempts = 3

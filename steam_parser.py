@@ -205,6 +205,10 @@ class SteamPage():
         "Swedish": get_item("Q9027"),
         "Hebrew": get_item("Q9288"),
         "Lithuanian": get_item("Q9083"),
+        "Bangla": get_item("Q9610"),
+        "Hindi": get_item("Q1568"),
+        "Malay": get_item("Q9237"),
+        "Indonesian": get_item("Q9240"),
     }
 
     languages_qualifiers = [

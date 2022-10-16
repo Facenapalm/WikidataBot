@@ -61,7 +61,7 @@ class BaseSeekerBot:
 
         self.database_item = pywikibot.ItemPage(self.repo, database_item)
         self.database_prop = database_prop
-        self.database_prop_label = self.__get_verbose_name(database_prop)
+        self.database_prop_label = self.get_verbose_name(database_prop)
 
         self.matching_prop_whitelist = matching_prop_whitelist
         self.change_matching_property(default_matching_prop)
@@ -76,7 +76,7 @@ class BaseSeekerBot:
                 raise RuntimeError("Unsupported matching property `{}`".format(matching_prop))
 
         self.matching_prop = matching_prop
-        self.matching_prop_label = self.__get_verbose_name(matching_prop)
+        self.matching_prop_label = self.get_verbose_name(matching_prop)
 
     def process_item(self, item):
         """
@@ -90,7 +90,7 @@ class BaseSeekerBot:
             if self.database_prop in item.claims:
                 raise RuntimeError("{} already set".format(self.database_prop_label))
 
-            entry_id, properties = self.__seek_database_entry(item)
+            entry_id, properties = self.seek_database_entry(item)
 
             claim = pywikibot.Claim(self.repo, self.database_prop)
             claim.setTarget(entry_id)
@@ -103,13 +103,13 @@ class BaseSeekerBot:
             for key, value in properties.items():
                 if key == self.matching_prop:
                     continue
-                key_verbose = self.__get_verbose_name(key)
+                key_verbose = self.get_verbose_name(key)
                 if key in item.claims:
                     print("{}: {} already set".format(item.title(), key_verbose))
                     continue
                 claim = pywikibot.Claim(self.repo, key)
                 claim.setTarget(value)
-                claim.addSources(self.__generate_source(entry_id))
+                claim.addSources(self.generate_source(entry_id))
                 item.addClaim(claim, summary="Add {} based on {}".format(key_verbose, self.database_prop_label))
                 print("{}: {} set to `{}`".format(item.title(), key_verbose, value))
 
@@ -176,7 +176,7 @@ class BaseSeekerBot:
 
     # Private methods.
 
-    def __get_verbose_name(self, prop):
+    def get_verbose_name(self, prop):
         """Return property's label (for instance, "Steam application ID" for P1733)."""
         if prop in self.verbose_names_cache:
             return self.verbose_names_cache[prop]
@@ -190,7 +190,7 @@ class BaseSeekerBot:
         self.verbose_names_cache[prop] = verbose_name
         return verbose_name
 
-    def __generate_source(self, database_id):
+    def generate_source(self, database_id):
         """Create a Wikidata "stated in" source linking to this database page."""
         statedin = pywikibot.Claim(self.repo, "P248")
         statedin.setTarget(self.database_item)
@@ -200,7 +200,7 @@ class BaseSeekerBot:
         retrieved.setTarget(get_current_wbtime())
         return [statedin, databaselink, retrieved]
 
-    def __seek_database_entry(self, item):
+    def seek_database_entry(self, item):
         """
         Try to find a database entry to connect with given Wikidata item.
         If found, return (entry_id, properties) tuple.

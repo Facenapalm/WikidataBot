@@ -55,7 +55,22 @@ class BaseSeekerBot:
     databases.
     """
 
-    def __init__(self, database_item, database_prop, default_matching_prop, matching_prop_whitelist=None, should_check_aliases=True, should_set_properties=True):
+    def __init__(self, database_item, database_prop, default_matching_prop,
+                 matching_prop_whitelist=None, should_check_aliases=True,
+                 should_set_properties=True):
+        """
+        database_item - Wikidata item ID (Qnnn) that describes this database to
+            use in "stated in" references.
+        database_prop - Wikidata property (Pnnn) that links to the database.
+        default_matching_prop - Wikidata property to use as a matching property
+            by default.
+        matching_prop_whitelist - Wikidata properties that are allowed to use as
+            a matching property. If set, it must include default_matching_prop.
+        should_check_aliases - if False, bot would seek a database entry using
+            item label only. If True, bot would also use item aliases.
+        should_set_properties - if set, bot would also upload the properties
+            parsed by parse_entry() method to Wikidata.
+        """
         self.repo = pywikibot.Site()
         self.verbose_names_cache = {}
 

@@ -61,7 +61,7 @@ class MailRuSeekerBot(BaseSeekerBot):
         response = requests.get("https://api.games.mail.ru/pc/v2/game/{}/".format(entry_id))
         try:
             if not response:
-                raise RuntimeError("can't get info of game `{}`".format(entry_id))
+                raise RuntimeError("can't get info")
             for item in response.json()["game_urls"]:
                 match = re.match(r"https?://store\.steampowered\.com/app/(\d+)", item["url"])
                 if not match:

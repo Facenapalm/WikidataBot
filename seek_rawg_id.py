@@ -27,6 +27,8 @@ instance, Epic Games Store or Microsoft Store.
 To get started, type:
 
     python seek_rawg_id.py -h
+
+Script requires RAWG API key, place it at ./keys/rawg.key file.
 """
 
 import requests

@@ -103,6 +103,7 @@ class CoOptimusSeekerBot(BaseSeekerBot):
     # implement abstract methods
 
     def search(self, query, max_results=None):
+        query = query.replace("&", "_")
         params = [
             ( "game-title-filter", query ),
             ( "system", "4" ),

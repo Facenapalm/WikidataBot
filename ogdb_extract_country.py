@@ -134,6 +134,7 @@ def main():
         "Neuseeland": pywikibot.ItemPage(repo, "Q664"),
         "Indien": pywikibot.ItemPage(repo, "Q668"),
         "Venezuela": pywikibot.ItemPage(repo, "Q717"),
+        "Kolumbien": pywikibot.ItemPage(repo, "Q739"),
         "El Salvador": pywikibot.ItemPage(repo, "Q792"),
         "Costa Rica": pywikibot.ItemPage(repo, "Q800"),
         "Israel": pywikibot.ItemPage(repo, "Q801"),

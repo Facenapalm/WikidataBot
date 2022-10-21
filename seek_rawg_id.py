@@ -89,6 +89,8 @@ STORES_DATA = {
     },
 }
 
+REVERSE_MATCHING = { entry["property"]: key for key, entry in STORES_DATA.items() }
+
 class RawgSeekerBot(BaseSeekerBot):
     def __init__(self):
         super().__init__(
@@ -110,8 +112,9 @@ class RawgSeekerBot(BaseSeekerBot):
             ( "search", query ),
             ( "page_size", max_results ),
             ( "page", 1 ),
+            ( "stores", REVERSE_MATCHING[self.matching_prop] ),
         ]
-        response = requests.get('https://api.rawg.io/api/search', params=params)
+        response = requests.get('https://api.rawg.io/api/games', params=params)
         return [result["slug"] for result in response.json()["results"]]
 
     def parse_entry(self, entry_id):

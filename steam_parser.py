@@ -609,6 +609,7 @@ class ExistingItemProcessor(ItemProcessor):
         supported_instances = {
             "Q7889", # video game
             "Q209163", # video game expansion pack
+            "Q848991", # browser game
             "Q865493", # video game mod
             "Q1066707", # downloadable content
             "Q1755420", # game demo
@@ -621,7 +622,9 @@ class ExistingItemProcessor(ItemProcessor):
             "Q56196027", # stuff pack
             "Q60997816", # video game edition
             "Q61456428", # total conversion mod
+            "Q62707668", # high resolution texture pack
             "Q64170203", # video game project
+            "Q64170508", # unfinished or abandoned video game project
             "Q90181054", # video game episode
             "Q111223304", # video game reboot
         }

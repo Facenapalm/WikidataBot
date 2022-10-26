@@ -103,7 +103,7 @@ class ModDBSeekerBot(BaseSeekerBot):
             "frostbite-2": get_item("Q12809604"),
             "frostbite-3": get_item("Q20472780"),
             "gamebryo": get_item("Q1196211"),
-            "gamemaker": get_item("Q16195922"),
+            "gamemaker": get_item("Q243720"),
             "genie-engine": get_item("Q2981987"),
             "genome": get_item("Q71848663"),
             "geo-mod-2": get_item("Q4039342"),

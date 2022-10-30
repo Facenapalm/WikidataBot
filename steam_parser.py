@@ -707,16 +707,18 @@ def cache_pages():
 
 def remove_duplicates(id_list):
     """Remove Steam IDs that already set in some Wikidata items."""
+    ok_items = []
     sparql = SparqlQuery()
-    # TODO: split id_list to 1000 element chunks or whatever ?
-    ok_items = sparql.select("""
-        SELECT ?code WHERE {{
-          VALUES ?code {{ {} }} .
-          FILTER NOT EXISTS {{
-            ?item wdt:P1733 ?code
-          }}
-        }}
-    """.format(" ".join(["\"{}\"".format(steam_id) for steam_id in id_list])))
+    for idx in range(0, len(id_list), 100):
+        ok_items += sparql.select("""
+            SELECT ?code WHERE {{
+              VALUES ?code {{ {} }} .
+              FILTER NOT EXISTS {{
+                ?item wdt:P1733 ?code
+              }}
+            }}
+        """.format(" ".join(["\"{}\"".format(steam_id) for steam_id in id_list[idx:idx+100]])))
+
     # we can just return [el["code"] for el in ok_items], but we want to keep
     # original order and notify about every duplicate
     ok_items = { el["code"] for el in ok_items }

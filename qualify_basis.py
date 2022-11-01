@@ -44,7 +44,7 @@ class QualifyingBot:
             try:
                 if self.qualifier_property in claim.qualifiers:
                     raise RuntimeError("already has a qualifier")
-                qualifier_values = self.get_qualifier_value(base_value)
+                qualifier_values = self.get_qualifier_values(base_value)
                 if not qualifier_values:
                     raise RuntimeError("can't get qualifier values")
 

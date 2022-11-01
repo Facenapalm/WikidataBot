@@ -178,6 +178,7 @@ class SteamPage():
         "Danish": get_item("Q9035"),
         "Dutch": get_item("Q7411"),
         "English": get_item("Q1860"),
+        "Estonian": get_item("Q9072"),
         "Filipino": get_item("Q33298"),
         "Finnish": get_item("Q1412"),
         "French": get_item("Q150"),

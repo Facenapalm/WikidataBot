@@ -20,11 +20,17 @@
 
 """A basis for qualify_xxx.py scripts."""
 
-import pywikibot
 from argparse import ArgumentParser
+
+import pywikibot
 from pywikibot import pagegenerators as pg
 
 class QualifyingBot:
+    """
+    A skeleton class for a simple bot that adds qualifiers to the claims of
+    given property.
+    """
+
     def __init__(self, base_property, qualifier_property):
         self.repo = pywikibot.Site()
         self.base_property = base_property
@@ -34,10 +40,10 @@ class QualifyingBot:
     def process_item(self, item):
         """Process one item by adding qualifiers to all claims of given property."""
         if item.isRedirectPage():
-            print("{} is a redirect page".format(item.title()))
+            print(f"{item.title()} is a redirect page")
             return
         if self.base_property not in item.claims:
-            print("{}: no {}s set".format(item.title(), self.base_property_name))
+            print(f"{item.title()}: no {self.base_property_name}s set")
             return
         for claim in item.claims[self.base_property]:
             base_value = claim.getTarget()
@@ -51,10 +57,10 @@ class QualifyingBot:
                 for qualifier_value in qualifier_values:
                     qualifier = pywikibot.Claim(self.repo, self.qualifier_property)
                     qualifier.setTarget(qualifier_value)
-                    claim.addQualifier(qualifier, summary="Add qualifier to {} `{}`".format(self.base_property_name, base_value))
-                    print("{}: qualifier set to `{}`".format(base_value, qualifier_value))
+                    claim.addQualifier(qualifier, summary=f"Add qualifier to {self.base_property_name} `{base_value}`")
+                    print(f"{base_value}: qualifier set to `{qualifier_value}`")
             except Exception as error:
-                print("{}: {}".format(base_value, error))
+                print(f"{base_value}: {error}")
 
     def run(self):
         """Parse command line arguments and process items accordingly."""
@@ -69,23 +75,25 @@ class QualifyingBot:
         args = parser.parse_args()
 
         if args.input == "all":
-            query = """
+            query = f"""
                 SELECT ?item {{
-                    ?item p:{} ?s
-                    FILTER NOT EXISTS {{ ?s pq:{} [] }}
+                    ?item p:{self.base_property} ?s
+                    FILTER NOT EXISTS {{ ?s pq:{self.qualifier_property} [] }}
                 }}
-            """.format(self.base_property, self.qualifier_property)
+            """
             generator = pg.WikidataSPARQLPageGenerator(query, site=self.repo)
             for item in generator:
                 self.process_item(item)
         else:
-            for line in open(args.input):
-                item = pywikibot.ItemPage(self.repo, line)
-                self.process_item(item)
+            with open(args.input, encoding="utf-8") as listfile:
+                for line in listfile:
+                    item = pywikibot.ItemPage(self.repo, line)
+                    self.process_item(item)
 
     # Virtual method to be implemented in inherited classes.
 
     def get_qualifier_values(self, base_value):
+        """Use the property value to return the list of qualifier values to add."""
         raise NotImplementedError("SeekerBot.get_qualifier_value() is not implemented")
 
     # Private methods.
@@ -95,5 +103,4 @@ class QualifyingBot:
         prop_page = pywikibot.PropertyPage(self.repo, prop)
         if "en" in prop_page.labels:
             return prop_page.labels["en"]
-        else:
-            return prop
+        return prop

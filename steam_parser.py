@@ -40,8 +40,6 @@ A list of elements to process might be obtained from page:
    https://www.wikidata.org/wiki/Wikidata:Database_reports/Constraint_violations/P1733
 """
 
-import pywikibot
-from pywikibot.data.sparql import SparqlQuery
 import urllib.request
 import time
 import re
@@ -49,6 +47,9 @@ import random
 import argparse
 import os.path
 from datetime import datetime
+
+import pywikibot
+from pywikibot.data.sparql import SparqlQuery
 
 title_replacements = [
     (r"&quot;", "\""),
@@ -129,12 +130,16 @@ steam = get_item("Q337535")
 digital_distribution = get_item("Q269415")
 
 def find_item_for_id(steam_id):
+    """
+    Return Wikidata item with given steam_id set. If such item does not exist or there are several
+    such items, return None.
+    """
     sparql = SparqlQuery()
-    result = sparql.select("""
+    result = sparql.select(f"""
         SELECT ?item WHERE {{
-          ?item wdt:P1733 \"{}\" .
+          ?item wdt:P1733 "{steam_id}" .
         }}
-    """.format(steam_id))
+    """)
     if len(result) != 1:
         return None
     match = re.match(r"^https?://www\.wikidata\.org/entity/(Q\d+)$", result[0]["item"])
@@ -297,18 +302,19 @@ class SteamPage():
         "Dec": 12,
     }
 
-    def __init__(self, steam_id, quiet=False, bypass_cache=False):
+    def __init__(self, steam_id, bypass_cache=False):
         match = re.match(r"https://store\.steampowered\.com/app/(\d+)/?", steam_id)
         if match:
             steam_id = match.group(1)
         else:
             steam_id = steam_id.strip()
 
-        filename = "steam_cache/{}".format(steam_id)
+        filename = f"steam_cache/{steam_id}"
         if os.path.isfile(filename) and not bypass_cache:
-            html = open(filename, encoding="utf-8").read()
+            with open(filename, encoding="utf-8") as cache_page:
+                html = cache_page.read()
             retrieve_date = datetime.utcfromtimestamp(os.path.getmtime(filename))
-            print("{}: used cached HTML".format(steam_id))
+            print(f"{steam_id}: Cached HTML used")
         else:
             attempts = 3
             headers = {
@@ -320,7 +326,7 @@ class SteamPage():
                 "Connection": "keep-alive",
                 "Cookie": "wants_mature_content=1;birthtime=470682001;lastagecheckage=1-0-1985;Steam_Language=english"
             }
-            url = "https://store.steampowered.com/app/{}/".format(steam_id)
+            url = f"https://store.steampowered.com/app/{steam_id}/"
             for attempt_no in range(attempts):
                 try:
                     time.sleep(random.randint(1, 3))
@@ -337,7 +343,7 @@ class SteamPage():
                 raise RuntimeError("Redirected to the main page")
             retrieve_date = datetime.utcnow()
 
-            print("{}: HTML downloaded".format(steam_id))
+            print(f"{steam_id}: HTML downloaded")
 
         self.steam_id = steam_id
         self.html = html
@@ -350,12 +356,13 @@ class SteamPage():
         """
         if not os.path.isdir("steam_cache"):
             os.mkdir("steam_cache")
-        filename = "steam_cache/{}".format(self.steam_id)
-        open(filename, "w", encoding="utf-8").write(self.html)
+        filename = f"steam_cache/{self.steam_id}"
+        with open(filename, "w", encoding="utf-8") as cache_page:
+            cache_page.write(self.html)
 
     def uncache(self):
         """Delete current Steam ID from cache."""
-        filename = "steam_cache/{}".format(self.steam_id)
+        filename = f"steam_cache/{self.steam_id}"
         if os.path.isfile(filename):
             os.remove(filename)
 
@@ -399,16 +406,15 @@ class SteamPage():
             for (matcher, replacer) in title_replacements:
                 title = re.sub(matcher, replacer, title)
             return title.strip()
-        else:
-            raise RuntimeError("Can't retrieve game title")
+
+        raise RuntimeError("Can't retrieve game title")
 
     def get_dlc_base_game(self):
         """Get Steam ID of the base game for this DLC or expansion."""
         match = re.search(r"<h1>Downloadable Content</h1>\s*<p>[^<>]+<a href=\"https?://store\.steampowered\.com/app/(\d+)[\"/]", self.html)
         if match:
             return match.group(1)
-        else:
-            raise RuntimeError("Can't get DLC base game")
+        raise RuntimeError("Can't get DLC base game")
 
     def get_dlc_base_game_item(self):
         """Get base game for this DLC or expansion as pywikibot.ItemPage instance."""
@@ -419,8 +425,7 @@ class SteamPage():
         match = re.search(r"<h1>Community-Made Mod</h1>\s*<p>[^<>]+<a href=\"https?://store\.steampowered\.com/app/(\d+)[\"/]", self.html)
         if match:
             return match.group(1)
-        else:
-            raise RuntimeError("Can't get modification base game")
+        raise RuntimeError("Can't get modification base game")
 
     def get_mod_base_game_item(self):
         """Get base game for this modification as pywikibot.ItemPage instance."""
@@ -438,7 +443,7 @@ class SteamPage():
         """Get release date as an pywikibot.WbTime instance. Throw an exception if the game isn't released yet."""
         status = self.get_status()
         if status != "released":
-            raise RuntimeError("Can't retrieve release date of an {} game".format(status))
+            raise RuntimeError(f"Can't retrieve release date of an {status} game")
         match = re.search(r"<div class=\"date\">(\d+) ([A-Z][a-z]{2}), (\d+)</div>", self.html)
         if match is None:
             raise RuntimeError("Release date parsing error")
@@ -456,16 +461,14 @@ class SteamPage():
         match = re.search(r"id=\"developers_list\">([\s\S]+?)</div>", self.html)
         if match:
             return [developer.strip() for developer in re.findall(r"<a[^>]+>(.*?)</a>", match.group(1))]
-        else:
-            return []
+        return []
 
     def get_publishers(self):
         """Get publishers as a list of strings, for instance, ['Valve']."""
         match = re.search(r"Publisher:</div>\s*<div[^>]+>([\s\S]+?)</div>", self.html)
         if match:
             return [publisher.strip() for publisher in re.findall(r"<a[^>]+>(.*?)</a>", match.group(1))]
-        else:
-            return []
+        return []
 
     def get_platforms(self):
         """Get platforms as a list of strings: 'win', 'mac' or 'linux'."""
@@ -506,7 +509,7 @@ class SteamPage():
                 continue
 
             if language not in self.languages_map:
-                raise RuntimeError("Unknown language `{}`".format(language))
+                raise RuntimeError(f"Unknown language `{language}`")
             language_item = self.languages_map[language]
 
             if language_item.getID() in seen_languages:
@@ -539,16 +542,16 @@ class SteamPage():
         match = re.search(r"<a href=\"https://www\.metacritic\.com/(game/pc/[\-a-z0-9!+_()]+)(?:\?[^\"]+)\" target=\"_blank\">Read Critic Reviews</a>", self.html)
         if match:
             return match.group(1)
-        else:
-            return None
+
+        return None
 
 
 class ItemProcessor():
     """Processor for one (ItemPage, SteamPage) pair."""
 
     def __init__(self, item_page, steam_page):
-        self.item = item_page
-        self.steam = steam_page
+        self.item_page = item_page
+        self.steam_page = steam_page
 
     def generate_inferred_from_source(self):
         """Create a Wikidata "inferred_from" source linking to Steam item."""
@@ -558,38 +561,38 @@ class ItemProcessor():
 
     def find_claim(self, prop, value):
         """Return requested prop=value claim as pywikibot.Claim."""
-        if prop not in self.item.claims:
+        if prop not in self.item_page.claims:
             return None
-        for claim in self.item.claims[prop]:
+        for claim in self.item_page.claims[prop]:
             if claim.getTarget() == value:
                 return claim
         return None
 
     def add_steam_qualifier(self, prop, values, typename="claim"):
         """For each value, add prop=value qualifier to the Steam ID claim."""
-        steam_id = self.steam.get_id()
+        steam_id = self.steam_page.get_id()
         claim = self.find_claim("P1733", steam_id)
         if prop in claim.qualifiers:
             return
         for value in values:
             qualifier = pywikibot.Claim(repo, prop)
             qualifier.setTarget(value)
-            claim.addQualifier(qualifier, summary="Add {} qualifier to Steam ID `{}`".format(typename, steam_id))
-            print("{}: Added {} qualifier".format(steam_id, typename))
+            claim.addQualifier(qualifier, summary=f"Add {typename} qualifier to Steam ID `{steam_id}`")
+            print(f"{steam_id}: Added {typename} qualifier")
 
     def add_claims(self, prop, values, typename="claim", get_source="default"):
         """If requested property is not set, add prop=value claim for each given value."""
-        if prop in self.item.claims:
+        if prop in self.item_page.claims:
             return
         if get_source == "default":
-            get_source = self.steam.generate_source
+            get_source = self.steam_page.generate_source
         for value in values:
             claim = pywikibot.Claim(repo, prop)
             claim.setTarget(value)
             if get_source:
                 claim.addSources(get_source())
-            self.item.addClaim(claim, summary="Add {} based on Steam page".format(typename))
-            print("{}: Added {}".format(self.steam.get_id(), typename))
+            self.item_page.addClaim(claim, summary=f"Add {typename} based on Steam page")
+            print(f"{self.steam_page.get_id()}: Added {typename}")
 
     def add_claims_with_update(self, prop, values, typename="claim", get_source="default", add_sources=False):
         """
@@ -598,22 +601,22 @@ class ItemProcessor():
         If add_sources is True, also add sources to uncited set values.
         """
         if get_source == "default":
-            get_source = self.steam.generate_source
+            get_source = self.steam_page.generate_source
         for value in values:
             claim = self.find_claim(prop, value)
             if claim:
                 # claim is already set, let's add a source if it's neccessary
                 if add_sources and len(claim.getSources()) == 0:
                     claim.addSources(get_source(), summary="Add source")
-                    print("{}: Added a source for {}".format(self.steam.get_id(), typename))
+                    print(f"{self.steam_page.get_id()}: Added a source for {typename}")
             else:
                 # there's no such claim, let's create it
                 claim = pywikibot.Claim(repo, prop)
                 claim.setTarget(value)
                 if get_source:
                     claim.addSources(get_source())
-                self.item.addClaim(claim, summary="Add {} based on Steam page".format(typename))
-                print("{}: Added {}".format(self.steam.get_id(), typename))
+                self.item_page.addClaim(claim, summary=f"Add {typename} based on Steam page")
+                print(f"{self.steam_page.get_id()}: Added {typename}")
 
     def add_claims_with_qualifiers(self, prop, qualifier_prop, values, typename="claim", get_source="default"):
         """
@@ -621,8 +624,8 @@ class ItemProcessor():
         `values` is a list of the following tuple: (property_value, [list_of_qualifier_values]).
         """
         if get_source == "default":
-            get_source = self.steam.generate_source
-        if prop in self.item.claims:
+            get_source = self.steam_page.generate_source
+        if prop in self.item_page.claims:
             return
         for prop_value, qualifier_values in values:
             claim = pywikibot.Claim(repo, prop)
@@ -633,20 +636,20 @@ class ItemProcessor():
                 claim.addQualifier(qualifier)
             if get_source:
                 claim.addSources(get_source())
-            self.item.addClaim(claim, summary="Add {} based on Steam page".format(typename))
-            print("{}: Added {}".format(self.steam.get_id(), typename))
+            self.item_page.addClaim(claim, summary=f"Add {typename} based on Steam page")
+            print(f"{self.steam_page.get_id()}: Added {typename}")
 
     def process(self):
         """Import missing information from Steam to Wikidata."""
         try:
-            date = self.steam.get_release_date()
+            date = self.steam_page.get_release_date()
         except Exception as error:
             date = None
-            print("{}: {}".format(self.steam.get_id(), error))
-        platforms = self.steam.get_platform_items()
-        gamemodes = self.steam.get_gamemode_items()
-        languages = self.steam.get_language_items()
-        metacritic = self.steam.get_metacritic_id()
+            print(f"{self.steam_page.get_id()}: {error}")
+        platforms = self.steam_page.get_platform_items()
+        gamemodes = self.steam_page.get_gamemode_items()
+        languages = self.steam_page.get_language_items()
+        metacritic = self.steam_page.get_metacritic_id()
 
         self.add_steam_qualifier("P400", platforms, "platform")
         self.add_claims_with_update("P437", [digital_distribution], "distribution format", get_source=self.generate_inferred_from_source)
@@ -665,12 +668,12 @@ class ItemProcessor():
         self.add_claims_with_update("P404", gamemodes, "game mode", add_sources=True)
         self.add_claims_with_qualifiers("P407", "P518", languages, "language")
         if metacritic:
-            data = (metacritic, [self.steam.platform_map["pc"]])
+            data = (metacritic, [self.steam_page.platform_map["pc"]])
             self.add_claims_with_qualifiers("P1712", "P400", [data], "Metacritic ID")
 
-        print("{}: Item {} processed".format(self.steam.get_id(), self.item.title()))
+        print(f"{self.steam_page.get_id()}: Item {self.item_page.title()} processed")
         if output:
-            output.write("{}\n".format(self.item.title()))
+            output.write(f"{self.item_page.title()}\n")
 
 class ExistingItemProcessor(ItemProcessor):
     """
@@ -733,21 +736,21 @@ class NewItemProcessor(ItemProcessor):
     """
 
     def __init__(self, steam_id):
-        steam = SteamPage(steam_id)
-        title = steam.get_title()
-        year = steam.get_release_year()
-        instance = steam.get_instance()
+        steam_page = SteamPage(steam_id)
+        title = steam_page.get_title()
+        year = steam_page.get_release_year()
+        instance = steam_page.get_instance()
         if instance not in descriptions_data:
-            raise RuntimeError("{} items are not supported".format(instance))
+            raise RuntimeError(f"{instance} items are not supported")
 
         base_property = None
         base_game = None
         if instance == "dlc":
             base_property = "P8646"
-            base_game = steam.get_dlc_base_game_item()
+            base_game = steam_page.get_dlc_base_game_item()
         elif instance == "mod":
             base_property = "P7075"
-            base_game = steam.get_mod_base_game_item()
+            base_game = steam_page.get_mod_base_game_item()
 
         labels = { data[0] : title for data in descriptions_data[instance] }
         if year:
@@ -758,12 +761,12 @@ class NewItemProcessor(ItemProcessor):
         item = pywikibot.ItemPage(repo)
         item.editEntity(
             { "labels": labels, "descriptions": descriptions },
-            summary="Create item for Steam application `{}`".format(steam_id)
+            summary=f"Create item for Steam application `{steam_id}`"
         )
-        super().__init__(item, steam)
+        super().__init__(item, steam_page)
 
-        self.add_claims("P31", [steam.get_instance_item()], "instance of")
-        self.add_claims_with_qualifiers("P1733", "P400", [(steam_id, steam.get_platform_items())], "Steam ID", get_source=None)
+        self.add_claims("P31", [steam_page.get_instance_item()], "instance of")
+        self.add_claims_with_qualifiers("P1733", "P400", [(steam_id, steam_page.get_platform_items())], "Steam ID", get_source=None)
         if base_property and base_game:
             self.add_claims(base_property, [base_game], "base game")
 
@@ -778,12 +781,13 @@ def cache_pages():
     I personally used it to bypass regional restrictions: download steam pages via vpn, turn off
     the vpn, launch the wikidata bot.
     """
-    for line in open("to_cache.txt"):
-        steam_id = line.strip()
-        try:
-            SteamPagem(steam_id, bypass_cache=True).cache()
-        except Exception as error:
-            print("{}: {}".format(steam_id, error))
+    with open("to_cache.txt", encoding="utf-8") as listfile:
+        for line in listfile:
+            steam_id = line.strip()
+            try:
+                SteamPage(steam_id, bypass_cache=True).cache()
+            except Exception as error:
+                print(f"{steam_id}: {error}")
 
 def remove_duplicates(id_list):
     """Remove Steam IDs that already set in some Wikidata items."""
@@ -797,7 +801,7 @@ def remove_duplicates(id_list):
                 ?item wdt:P1733 ?code
               }}
             }}
-        """.format(" ".join(["\"{}\"".format(steam_id) for steam_id in id_list[idx:idx+100]])))
+        """.format(" ".join([f"\"{steam_id}\"" for steam_id in id_list[idx:idx+100]])))
 
     # we can just return [el["code"] for el in ok_items], but we want to keep
     # original order and notify about every duplicate
@@ -808,21 +812,22 @@ def remove_duplicates(id_list):
         if steam_id in ok_items:
             result.append(steam_id)
         else:
-            print("{}: duplicates existing item, skipped".format(steam_id))
+            print(f"{steam_id}: Duplicates existing item, skipped")
     return result
 
 def main(input_filename):
     # Remove duplicates and sort IDs
     q_list = []
     s_list = []
-    for line in open(input_filename, encoding="utf-8"):
-        line = line.strip();
-        if line.startswith("Q"):
-            if line not in q_list:
-                q_list.append(line)
-        else:
-            if line not in s_list:
-                s_list.append(line)
+    with open(input_filename, encoding="utf-8") as listfile:
+        for line in listfile:
+            line = line.strip()
+            if line.startswith("Q"):
+                if line not in q_list:
+                    q_list.append(line)
+            else:
+                if line not in s_list:
+                    s_list.append(line)
     s_list = remove_duplicates(s_list)
 
     # Process existing items
@@ -830,16 +835,17 @@ def main(input_filename):
         try:
             ExistingItemProcessor(item_id).process()
         except Exception as error:
-            print("{}: {}".format(item_id, error))
+            print(f"{item_id}: {error}")
 
     # Create new items
     for steam_id in s_list:
         try:
             NewItemProcessor(steam_id).process()
         except Exception as error:
-            print("{}: {}".format(steam_id, error))
+            print(f"{steam_id}: {error}")
 
 def parse_item_page_arg(arg_value):
+    """Parse pywikibot.ItemPage for ArgumentParser."""
     if not re.match(r"^Q\d+$", arg_value):
         raise argparse.ArgumentTypeError
     return pywikibot.ItemPage(repo, arg_value)

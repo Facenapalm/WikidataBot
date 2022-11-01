@@ -20,14 +20,15 @@
 
 """A basis for seek_xxx_id.py scripts."""
 
-import pywikibot
 from argparse import ArgumentParser
 from datetime import datetime
+
+import pywikibot
 from pywikibot import pagegenerators as pg
 
-def get_first_key(x):
-    """Return first iterable key of the dict x."""
-    return next(iter(x))
+def get_first_key(dictionary):
+    """Return first iterable key of the dictionary."""
+    return next(iter(dictionary))
 
 def get_current_wbtime():
     """Get pywikibot.WbTime object describing the current date in UTC."""
@@ -88,7 +89,7 @@ class BaseSeekerBot:
         """Set a property to use to match database entries with Wikidata items."""
         if self.matching_prop_whitelist:
             if matching_prop not in self.matching_prop_whitelist:
-                raise RuntimeError("Unsupported matching property `{}`".format(matching_prop))
+                raise RuntimeError(f"Unsupported matching property `{matching_prop}`")
 
         self.matching_prop = matching_prop
         self.matching_prop_label = self.get_verbose_name(matching_prop)
@@ -101,16 +102,16 @@ class BaseSeekerBot:
         """
         try:
             if item.isRedirectPage():
-                raise RuntimeError("{} is a redirect page".format(item.title()))
+                raise RuntimeError(f"{item.title()} is a redirect page")
             if self.database_prop in item.claims:
-                raise RuntimeError("{} already set".format(self.database_prop_label))
+                raise RuntimeError(f"{self.database_prop_label} already set")
 
             entry_id, properties = self.seek_database_entry(item)
 
             claim = pywikibot.Claim(self.repo, self.database_prop)
             claim.setTarget(entry_id)
-            item.addClaim(claim, summary="Add {} based on matching {}".format(self.database_prop_label, self.matching_prop_label))
-            print("{}: {} set to `{}`".format(item.title(), self.database_prop_label, entry_id))
+            item.addClaim(claim, summary=f"Add {self.database_prop_label} based on matching {self.matching_prop_label}")
+            print(f"{item.title()}: {self.database_prop_label} set to `{entry_id}`")
 
             if not self.should_set_properties:
                 return
@@ -120,36 +121,37 @@ class BaseSeekerBot:
                     continue
                 key_verbose = self.get_verbose_name(key)
                 if key in item.claims:
-                    print("{}: {} already set".format(item.title(), key_verbose))
+                    print(f"{item.title()}: {key_verbose} already set")
                     continue
                 claim = pywikibot.Claim(self.repo, key)
                 claim.setTarget(value)
                 claim.addSources(self.generate_source(entry_id))
-                item.addClaim(claim, summary="Add {} based on {}".format(key_verbose, self.database_prop_label))
-                print("{}: {} set to `{}`".format(item.title(), key_verbose, value))
+                item.addClaim(claim, summary=f"Add {key_verbose} based on {self.database_prop_label}")
+                print(f"{item.title()}: {key_verbose} set to `{value}`")
 
         except RuntimeError as error:
-            print("{}: {}".format(item.title(), error))
+            print(f"{item.title()}: {error}")
 
     def process_file(self, filename):
         """
         Process all items from the file.
         Given file should contain a list of items to process (Qnnn), one per line.
         """
-        for line in open(filename):
-            item = pywikibot.ItemPage(self.repo, line)
-            self.process_item(item)
+        with open(filename, encoding="utf-8") as listfile:
+            for line in listfile:
+                item = pywikibot.ItemPage(self.repo, line)
+                self.process_item(item)
 
     def process_all_items(self, limit=None):
         """Process items that have matching property, but no link to this database."""
-        query = """
+        query = f"""
             SELECT ?item {{
-                ?item p:{} [] .
-                FILTER NOT EXISTS {{ ?item p:{} [] }}
+                ?item p:{self.matching_prop} [] .
+                FILTER NOT EXISTS {{ ?item p:{self.database_prop} [] }}
             }}
-        """.format(self.matching_prop, self.database_prop)
+        """
         if limit:
-            query += "LIMIT {}".format(limit)
+            query += f"LIMIT {limit}"
         generator = pg.WikidataSPARQLPageGenerator(query, site=self.repo)
         for item in generator:
             self.process_item(item)
@@ -157,15 +159,15 @@ class BaseSeekerBot:
     def run(self):
         """Parse command line arguments and process items accordingly."""
         parser_arguments = {}
-        parser_arguments["description"] = "Add {} ({}) based on matching property (second positional argument).".format(self.database_prop_label, self.database_prop)
+        parser_arguments["description"] = f"Add {self.database_prop_label} ({self.database_prop}) based on matching property (second positional argument)."
         if self.should_set_properties:
-            parser_arguments["description"] += " Then import data based on {}.".format(self.database_prop_label)
+            parser_arguments["description"] += f" Then import data based on {self.database_prop_label}."
         if self.matching_prop_whitelist:
             parser_arguments["epilog"] = "Supported base properties: {}".format(", ".join(sorted(self.matching_prop_whitelist)))
 
         parser = ArgumentParser(**parser_arguments)
         parser.add_argument("input", help="A path to the file with the list of IDs of items to process (Qnnn) or a keyword \"all\"")
-        parser.add_argument("base", nargs="?", help="A property to use to match Wikidata items with database entries. If ommited, defaults to \"{}\" ({})".format(self.matching_prop, self.matching_prop_label))
+        parser.add_argument("base", nargs="?", help=f"A property to use to match Wikidata items with database entries. If ommited, defaults to \"{self.matching_prop}\" ({self.matching_prop_label})")
         parser.add_argument("-limit", "-l", type=int, default=0, help="A number of items to process (optional, only works with keyword \"all\")")
         args = parser.parse_args()
 
@@ -222,9 +224,9 @@ class BaseSeekerBot:
         If not found, throw RuntimeException.
         """
         if self.matching_prop not in item.claims:
-            raise RuntimeError("{} not found in the item".format(self.matching_prop_label))
+            raise RuntimeError(f"{self.matching_prop_label} not found in the item")
         if len(item.claims[self.matching_prop]) > 1:
-            raise RuntimeError("several {}s found".format(self.matching_prop_label))
+            raise RuntimeError(f"several {self.matching_prop_label}s found")
         matching_value = item.claims[self.matching_prop][0].getTarget()
 
         if "en" in item.labels:
@@ -253,4 +255,4 @@ class BaseSeekerBot:
                         if properties[self.matching_prop] == matching_value:
                             return (candidate, properties)
 
-        raise RuntimeError("no suitable {} found".format(self.database_prop_label))
+        raise RuntimeError(f"no suitable {self.database_prop_label} found")

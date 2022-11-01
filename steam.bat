@@ -9,5 +9,6 @@ python seek_rawg_id.py temp.txt
 python seek_riotpixels_id.py temp.txt
 
 python seek_indiedb_id.py temp.txt
+python qualify_igdb.py temp.txt
 
 del temp.txt

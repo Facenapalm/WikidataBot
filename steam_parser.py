@@ -171,46 +171,109 @@ class SteamPage():
     }
 
     languages_map = {
+        "Afrikaans": get_item("Q14196"),
+        "Albanian": get_item("Q8748"),
+        "Amharic": get_item("Q28244"),
         "Arabic": get_item("Q13955"),
+        "Armenian": get_item("Q8785"),
+        "Assamese": get_item("Q29401"),
+        "Azerbaijani": get_item("Q9292"),
         "Bangla": get_item("Q9610"),
+        "Basque": get_item("Q8752"),
+        "Belarusian": get_item("Q9091"),
+        "Bosnian": get_item("Q9303"),
         "Bulgarian": get_item("Q7918"),
+        "Catalan": get_item("Q7026"),
+        "Cherokee": get_item("Q33388"),
+        "Croatian": get_item("Q6654"),
         "Czech": get_item("Q9056"),
         "Danish": get_item("Q9035"),
+        "Dari": get_item("Q178440"),
         "Dutch": get_item("Q7411"),
         "English": get_item("Q1860"),
         "Estonian": get_item("Q9072"),
         "Filipino": get_item("Q33298"),
         "Finnish": get_item("Q1412"),
         "French": get_item("Q150"),
+        "Galician": get_item("Q9307"),
+        "Georgian": get_item("Q8108"),
         "German": get_item("Q188"),
         "Greek": get_item("Q9129"),
+        "Gujarati": get_item("Q5137"),
+        "Hausa": get_item("Q56475"),
         "Hebrew": get_item("Q9288"),
         "Hindi": get_item("Q1568"),
         "Hungarian": get_item("Q9067"),
+        "Icelandic": get_item("Q294"),
+        "Igbo": get_item("Q33578"),
         "Indonesian": get_item("Q9240"),
+        "Irish": get_item("Q9142"),
         "Italian": get_item("Q652"),
         "Japanese": get_item("Q5287"),
+        "K'iche'": get_item("Q36494"),
+        "Kannada": get_item("Q33673"),
+        "Kazakh": get_item("Q9252"),
+        "Khmer": get_item("Q9205"),
+        "Kinyarwanda": get_item("Q33573"),
+        "Konkani": get_item("Q34239"),
         "Korean": get_item("Q9176"),
+        "Kyrgyz": get_item("Q9255"),
+        "Latvian": get_item("Q9078"),
         "Lithuanian": get_item("Q9083"),
+        "Luxembourgish": get_item("Q9051"),
+        "Macedonian": get_item("Q9296"),
         "Malay": get_item("Q9237"),
+        "Malayalam": get_item("Q36236"),
+        "Maltese": get_item("Q9166"),
+        "Maori": get_item("Q6122670"),
+        "Marathi": get_item("Q1571"),
+        "Mongolian": get_item("Q9246"),
+        "Nepali": get_item("Q33823"),
         "Norwegian": get_item("Q9043"),
+        "Odia": get_item("Q33810"),
+        "Persian": get_item("Q9168"),
         "Polish": get_item("Q809"),
         "Portuguese - Brazil": get_item("Q750553"),
         "Portuguese - Portugal": get_item("Q5146"),
-        "Portuguese": get_item("Q5146"),
+        "Punjabi (Gurmukhi)": get_item("Q58635"), # Wikidata doesn't have an item for specific writing yet?
+        "Punjabi (Shahmukhi)": get_item("Q58635"), # Wikidata doesn't have an item for specific writing yet?
+        "Quechua": get_item("Q5218"),
         "Romanian": get_item("Q7913"),
         "Russian": get_item("Q7737"),
+        "Scots": get_item("Q14549"),
         "Serbian": get_item("Q9299"),
         "Simplified Chinese": get_item("Q13414913"),
-        "Slovakian": get_item("Q9058"),
+        "Sindhi": get_item("Q33997"),
+        "Sinhala": get_item("Q13267"),
+        "Slovak": get_item("Q9058"),
+        "Slovenian": get_item("Q9063"),
+        "Sorani": get_item("Q36811"),
+        "Sotho": get_item("Q34340"),
         "Spanish - Latin America": get_item("Q56649449"),
         "Spanish - Spain": get_item("Q1321"),
+        "Swahili": get_item("Q7838"),
         "Swedish": get_item("Q9027"),
+        "Tajik": get_item("Q9260"),
+        "Tamil": get_item("Q5885"),
+        "Tatar": get_item("Q25285"),
+        "Telugu": get_item("Q8097"),
         "Thai": get_item("Q9217"),
+        "Tigrinya": get_item("Q34124"),
         "Traditional Chinese": get_item("Q18130932"),
+        "Tswana": get_item("Q34137"),
         "Turkish": get_item("Q256"),
+        "Turkmen": get_item("Q9267"),
         "Ukrainian": get_item("Q8798"),
+        "Urdu": get_item("Q1617"),
+        "Uyghur": get_item("Q13263"),
+        "Uzbek": get_item("Q9264"),
+        "Valencian": get_item("Q32641"),
         "Vietnamese": get_item("Q9199"),
+        "Welsh": get_item("Q9309"),
+        "Wolof": get_item("Q34257"),
+        "Xhosa": get_item("Q13218"),
+        "Yoruba": get_item("Q34311"),
+        "Zulu": get_item("Q10179"),
     }
 
     languages_qualifiers = [
@@ -437,19 +500,32 @@ class SteamPage():
         """
         result = []
         same_checks = True
+        seen_languages = set()
         for language, info in re.findall(r"class=\"ellipsis\">\s*(.*?)\s*</td>\s*(.*?)\s*</tr>", self.html, flags=re.DOTALL):
             if "Not supported" in info:
                 continue
+
+            if language not in self.languages_map:
+                raise RuntimeError("Unknown language `{}`".format(language))
+            language_item = self.languages_map[language]
+
+            if language_item.getID() in seen_languages:
+                # For some languages, steam has more diverse classification than we do.
+                # In this case, languages_map can have overlapping items, and we don't want to have
+                # duplicate values in the languages list.
+                continue
+            seen_languages.add(language_item.getID())
+
             checks = re.findall(r"<td class=\"checkcol\">\s*(<span>&#10004;</span>)?\s*</td>\s*", info)
             if len(checks) != 3:
                 raise ValueError("Can't parse language tables")
             qualifiers = [qualifier for qualifier, check in zip(self.languages_qualifiers, checks) if check]
-            try:
-                result.append((self.languages_map[language], qualifiers))
-            except KeyError as error:
-                raise RuntimeError("Unknown language `{}`".format(error.args[0]))
+
+            result.append((language_item, qualifiers))
+
             if qualifiers != result[0][1]:
                 same_checks = False
+
         if same_checks:
             # Some indie titles love to ensure they have full voice acting and subtitles for every
             # language even if the games don't have any speech whatsoever.
@@ -632,7 +708,10 @@ class ExistingItemProcessor(ItemProcessor):
         }
         instance_is_correct = False
         for claim in item.claims["P31"]:
-            if claim.getTarget().getID() in supported_instances:
+            instance = claim.getTarget()
+            if instance is None:
+                continue
+            if instance.getID() in supported_instances:
                 instance_is_correct = True
                 break
         if not instance_is_correct:

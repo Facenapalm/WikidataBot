@@ -159,16 +159,16 @@ class CoOptimusSeekerBot(BaseSeekerBot):
 
             game_is_coop = False
             if "P404" in item.claims:
-                # iterate through set game modes (P404)
-                # and check if "co-op mode" (Q1758804) is set
+                # iterate through set game modes (P404) and check if
+                # multiplayer video game (Q6895044) or "co-op mode" (Q1758804) is set
                 for claim in item.claims["P404"]:
                     if claim.target is None:
                         continue
-                    if claim.target.id == "Q1758804":
+                    if claim.target.id in { "Q6895044", "Q1758804" }:
                         game_is_coop = True
                         break
             if not game_is_coop:
-                raise RuntimeError("{} is not a co-op game".format(item.title()))
+                raise RuntimeError("{} is not a multiplayer or co-op game".format(item.title()))
 
             entry_id, properties = self.seek_database_entry(item)
 

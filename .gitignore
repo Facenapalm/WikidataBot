@@ -5,3 +5,5 @@ steam_cache
 throttle.ctrl
 pywikibot.lwp
 user-config.py
+user-password.py
+*.txt

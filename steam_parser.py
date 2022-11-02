@@ -287,7 +287,7 @@ class SteamPage():
         get_item("Q204028"), # subtitles
     ]
 
-    month_names = {
+    short_month_names = {
         "Jan": 1,
         "Feb": 2,
         "Mar": 3,
@@ -300,6 +300,21 @@ class SteamPage():
         "Oct": 10,
         "Nov": 11,
         "Dec": 12,
+    }
+
+    full_month_names = {
+        "January": 1,
+        "February": 2,
+        "March": 3,
+        "April": 4,
+        "May": 5,
+        "June": 6,
+        "July": 7,
+        "August": 8,
+        "September": 9,
+        "October": 10,
+        "November": 11,
+        "December": 12,
     }
 
     def __init__(self, steam_id, bypass_cache=False):
@@ -431,7 +446,7 @@ class SteamPage():
         """Get base game for this modification as pywikibot.ItemPage instance."""
         return find_item_for_id(self.get_mod_base_game())
 
-    def get_status(self):
+    def get_release_status(self):
         """Get status as a string: 'unreleased', 'early access' or 'released'."""
         if "game_area_comingsoon" in self.html:
             return "unreleased"
@@ -439,22 +454,51 @@ class SteamPage():
             return "early access"
         return "released"
 
+    def is_released(self):
+        """Check if the game has been fully released."""
+        return self.get_release_status() == "released"
+
     def get_release_date(self):
-        """Get release date as an pywikibot.WbTime instance. Throw an exception if the game isn't released yet."""
-        status = self.get_status()
-        if status != "released":
-            raise RuntimeError(f"Can't retrieve release date of an {status} game")
-        match = re.search(r"<div class=\"date\">(\d+) ([A-Z][a-z]{2}), (\d+)</div>", self.html)
+        """Get release date as an pywikibot.WbTime instance."""
+        match = re.search(r"<div class=\"date\">(.*?)</div>", self.html)
         if match is None:
-            raise RuntimeError("Release date parsing error")
-        return pywikibot.WbTime(year=int(match.group(3)), month=self.month_names[match.group(2)], day=int(match.group(1)))
+            raise RuntimeError("Release date field not found")
+        date_div = match.group(1).strip()
+
+        # 10 Dec, 2077
+        match = re.match(r"^(\d{1,2}) ([A-Z][a-z]{2}), (\d{4})$", date_div)
+        if match:
+            month_name =  match.group(2)
+            if month_name in self.short_month_names:
+                return pywikibot.WbTime(year=int(match.group(3)), month=self.short_month_names[month_name], day=int(match.group(1)))
+            else:
+                raise RuntimeError(f"Unknown month abbreviation `{month_name}`")
+
+        # December 2077
+        match = re.match(r"^([A-Z][a-z]+) (\d{4})$", date_div)
+        if match:
+            month_name = match.group(1)
+            if month_name in self.full_month_names:
+                return pywikibot.WbTime(year=int(match.group(2)), month=self.full_month_names[month_name])
+            else:
+                raise RuntimeError(f"Unknown month name `{month_name}`")
+
+        # Q4 2077
+        match = re.match(r"^Q([1-4]) (\d{4})", date_div)
+        if match:
+            # Wikidata doesn't support quarters of calendar year, so we'll strip it to year only
+            return pywikibot.WbTime(year=int(match.group(2)))
+
+        # 2077
+        match = re.match(r"^(\d{4})$", date_div)
+        if match:
+            return pywikibot.WbTime(year=int(match.group(1)))
+
+        raise RuntimeError(f"Unknown date format: `{date_div}`")
 
     def get_release_year(self):
-        """Get release year, or None if the game isn't released yet."""
-        try:
-            return self.get_release_date().year
-        except Exception:
-            return None
+        """Get release year as int."""
+        return self.get_release_date().year
 
     def get_developers(self):
         """Get developers as a list of strings, for instance, ['Valve']."""
@@ -641,11 +685,11 @@ class ItemProcessor():
 
     def process(self):
         """Import missing information from Steam to Wikidata."""
-        try:
+        if self.steam_page.is_released():
             date = self.steam_page.get_release_date()
-        except Exception as error:
+        else:
             date = None
-            print(f"{self.steam_page.get_id()}: {error}")
+            print(f"{self.steam_page.get_id()}: Can't retrieve release date of an unreleased game")
         platforms = self.steam_page.get_platform_items()
         gamemodes = self.steam_page.get_gamemode_items()
         languages = self.steam_page.get_language_items()
@@ -738,7 +782,10 @@ class NewItemProcessor(ItemProcessor):
     def __init__(self, steam_id):
         steam_page = SteamPage(steam_id)
         title = steam_page.get_title()
-        year = steam_page.get_release_year()
+        if steam_page.is_released():
+            year = steam_page.get_release_year()
+        else:
+            year = None
         instance = steam_page.get_instance()
         if instance not in descriptions_data:
             raise RuntimeError(f"{instance} items are not supported")

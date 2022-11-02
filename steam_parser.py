@@ -468,9 +468,18 @@ class SteamPage():
         # 10 Dec, 2077
         match = re.match(r"^(\d{1,2}) ([A-Z][a-z]{2}), (\d{4})$", date_div)
         if match:
-            month_name =  match.group(2)
+            month_name = match.group(2)
             if month_name in self.short_month_names:
                 return pywikibot.WbTime(year=int(match.group(3)), month=self.short_month_names[month_name], day=int(match.group(1)))
+            else:
+                raise RuntimeError(f"Unknown month abbreviation `{month_name}`")
+
+        # Dec 10, 2077
+        match = re.match(r"^([A-Z][a-z]{2}) (\d{1,2}), (\d{4})$", date_div)
+        if match:
+            month_name = match.group(1)
+            if month_name in self.short_month_names:
+                return pywikibot.WbTime(year=int(match.group(3)), month=self.short_month_names[month_name], day=int(match.group(2)))
             else:
                 raise RuntimeError(f"Unknown month abbreviation `{month_name}`")
 

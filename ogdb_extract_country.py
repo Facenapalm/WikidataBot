@@ -106,6 +106,7 @@ def main():
         "Türkei": pywikibot.ItemPage(repo, "Q43"),
         "Portugal": pywikibot.ItemPage(repo, "Q45"),
         "Niederlande": pywikibot.ItemPage(repo, "Q55"),
+        "Uruguay": pywikibot.ItemPage(repo, "Q77"),
         "Mexiko": pywikibot.ItemPage(repo, "Q96"),
         "Frankreich": pywikibot.ItemPage(repo, "Q142"),
         "China": pywikibot.ItemPage(repo, "Q148"),
@@ -152,6 +153,7 @@ def main():
         "Südkorea": pywikibot.ItemPage(repo, "Q884"),
         "Philippinen": pywikibot.ItemPage(repo, "Q928"),
         "Marokko": pywikibot.ItemPage(repo, "Q1028"),
+        "Hong Kong": pywikibot.ItemPage(repo, "Q8646"),
         "U.d.S.S.R.": pywikibot.ItemPage(repo, "Q15180"),
         "Irland": pywikibot.ItemPage(repo, "Q22890"),
     }

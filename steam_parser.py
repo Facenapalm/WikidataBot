@@ -777,7 +777,7 @@ class ExistingItemProcessor(ItemProcessor):
     def __init__(self, item_id):
         item = pywikibot.ItemPage(repo, item_id)
 
-        if not self.check_instance_of():
+        if not self.check_instance_of(item):
             raise RuntimeError("Item is not an instance of video game, DLC or expansion pack")
 
         if "P1733" not in item.claims:

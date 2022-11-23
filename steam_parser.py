@@ -330,6 +330,7 @@ class SteamPage():
                 html = cache_page.read()
             retrieve_date = datetime.utcfromtimestamp(os.path.getmtime(filename))
             print(f"{steam_id}: Cached HTML used")
+            self.cache_used = True
         else:
             attempts = 3
             headers = {
@@ -353,12 +354,12 @@ class SteamPage():
                         raise error
             match = re.search(r"<span class=\"error\">(.*?)</span>", html)
             if match:
-                raise RuntimeError(match.group(1))
+                raise RuntimeError(f"{match.group(1)} ({steam_id})")
             if "<title>Welcome to Steam</title>" in html:
-                raise RuntimeError("Redirected to the main page")
+                raise RuntimeError(f"Redirected to the main page ({steam_id})")
             retrieve_date = datetime.utcnow()
-
             print(f"{steam_id}: HTML downloaded")
+            self.cache_used = False
 
         self.steam_id = steam_id
         self.html = html
@@ -369,6 +370,8 @@ class SteamPage():
         Save html code as steam_cache/{steam_id} file. Next time it would be requested,
         __init__ would read a file instead of making a request.
         """
+        if self.cache_used:
+            return
         if not os.path.isdir("steam_cache"):
             os.mkdir("steam_cache")
         filename = f"steam_cache/{self.steam_id}"
@@ -734,10 +737,8 @@ class ExistingItemProcessor(ItemProcessor):
     this class would use it to get SteamPage.
     """
 
-    def __init__(self, item_id):
-        item = pywikibot.ItemPage(repo, item_id)
-
-        # Check P31
+    def check_instance_of(self, item):
+        """Check if the item is an instance of video game, DLC or expansion pack."""
         if "P31" not in item.claims:
             raise RuntimeError("Instance of is not set")
         supported_instances = {
@@ -760,7 +761,9 @@ class ExistingItemProcessor(ItemProcessor):
             "Q64170203", # video game project
             "Q64170508", # unfinished or abandoned video game project
             "Q90181054", # video game episode
+            "Q107636751", # cosmetic downloadable content
             "Q111223304", # video game reboot
+            "Q111662771", # clothing downloadable content
         }
         instance_is_correct = False
         for claim in item.claims["P31"]:
@@ -768,12 +771,15 @@ class ExistingItemProcessor(ItemProcessor):
             if instance is None:
                 continue
             if instance.getID() in supported_instances:
-                instance_is_correct = True
-                break
-        if not instance_is_correct:
+                return True
+        return False
+
+    def __init__(self, item_id):
+        item = pywikibot.ItemPage(repo, item_id)
+
+        if not self.check_instance_of():
             raise RuntimeError("Item is not an instance of video game, DLC or expansion pack")
 
-        # check P1733
         if "P1733" not in item.claims:
             raise RuntimeError("Steam application ID not found")
         if len(item.claims["P1733"]) > 1:

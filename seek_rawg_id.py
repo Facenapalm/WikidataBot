@@ -45,7 +45,8 @@ STORES_DATA = {
     2: {
         "title": "Microsoft Store",
         "property": "P5885",
-        "regex": r"^https?:\/\/www\.microsoft\.com\/(?:[-a-z]+\/)?(?:store\/)?p\/[^\/]+\/([a-zA-Z0-9]{12})"
+        "regex": r"^https?:\/\/www\.microsoft\.com\/(?:[-a-z]+\/)?(?:store\/)?p\/[^\/]+\/([a-zA-Z0-9]{12})",
+        "normalize": lambda x: x.lower()
     },
     3: {
         "title": "PlayStation Store",
@@ -118,24 +119,29 @@ class RawgSeekerBot(BaseSeekerBot):
         return [result["slug"] for result in response.json()["results"]]
 
     def parse_entry(self, entry_id):
-        url = "https://api.rawg.io/api/games/{}/stores?key={}".format(entry_id, self.api_key)
+        url = f"https://api.rawg.io/api/games/{entry_id}/stores?key={self.api_key}"
         response = requests.get(url)
         json = response.json()
 
         result = {}
         if "results" in json:
-            for store_info in json["results"]:
-                store_id = store_info["store_id"]
+            for store_json in json["results"]:
+                store_id = store_json["store_id"]
                 if store_id not in STORES_DATA:
-                    print("WARNING: no data for store {} set".format(store_id))
+                    print(f"WARNING: no data for store {store_id} set")
                     continue
-                prop = STORES_DATA[store_id]["property"]
-                regex = STORES_DATA[store_id]["regex"]
-                match = re.search(regex, store_info["url"])
+
+                store_data = STORES_DATA[store_id]
+                prop = store_data["property"]
+                regex = store_data["regex"]
+                match = re.search(regex, store_json["url"])
                 if match:
-                    result[prop] = match.group(1)
+                    property_value = match.group(1)
+                    if "normalize" in store_data:
+                        property_value = store_data["normalize"](property_value)
+                    result[prop] = property_value
                 else:
-                    print("WARNING: {} ID of `{}` element doesn't match the regex mask".format(STORES_DATA[store_id]["title"], entry_id))
+                    print(f"WARNING: {STORES_DATA[store_id]['title']} ID of `{entry_id}` element doesn't match the regex mask")
         return result
 
 if __name__ == "__main__":

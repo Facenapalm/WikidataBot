@@ -114,10 +114,16 @@ mod_descriptions_data = [
     ("ru", "мод", "мод {} года"),
 ]
 
+software_descriptions_data = [
+    ("en", "software", "{} software"),
+    ("ru", "программное обеспечение", "программное обеспечение {} года"),
+]
+
 descriptions_data = {
     "game": vg_descriptions_data,
     "dlc": dlc_descriptions_data,
     "mod": mod_descriptions_data,
+    "software": software_descriptions_data,
 }
 
 arguments = None
@@ -160,6 +166,7 @@ class SteamPage():
         "dlc": get_item("Q209163"),
         "mod": get_item("Q865493"),
         "soundtrack": get_item("Q100749465"),
+        "software": get_item("Q166142"),
     }
 
     platform_map = {
@@ -410,6 +417,8 @@ class SteamPage():
             return "mod"
         if "game_area_soundtrack_bubble" in self.html:
             return "soundtrack"
+        if "<h2>About This Software</h2>" in self.html:
+            return "software"
         return "game"
 
     def get_instance_item(self):

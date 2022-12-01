@@ -104,6 +104,11 @@ vg_descriptions_data = [
     ("uk", "відеогра", "відеогра {} року"),
 ]
 
+early_access_descriptions_data = [
+    ("en", "early access video game", "{} early access video game"),
+    ("ru", "компьютерная игра в раннем доступе", "компьютерная игра в раннем доступе {} года"),
+]
+
 dlc_descriptions_data = [
     ("en", "expansion pack", "{} expansion pack"),
     ("ru", "дополнение", "дополнение {} года"),
@@ -121,6 +126,7 @@ software_descriptions_data = [
 
 descriptions_data = {
     "game": vg_descriptions_data,
+    "early access": early_access_descriptions_data,
     "dlc": dlc_descriptions_data,
     "mod": mod_descriptions_data,
     "software": software_descriptions_data,
@@ -133,6 +139,7 @@ repo = pywikibot.Site()
 get_item = lambda x: pywikibot.ItemPage(repo, x)
 
 steam = get_item("Q337535")
+early_access = get_item("Q17042291")
 digital_distribution = get_item("Q269415")
 
 def find_item_for_id(steam_id):
@@ -518,8 +525,11 @@ class SteamPage():
         raise RuntimeError(f"Unknown date format: `{date_div}`")
 
     def get_release_year(self):
-        """Get release year as int."""
-        return self.get_release_date().year
+        """Get release year as int, or None."""
+        try:
+            return self.get_release_date().year
+        except RuntimeError:
+            return None
 
     def get_developers(self):
         """Get developers as a list of strings, for instance, ['Valve']."""
@@ -706,11 +716,12 @@ class ItemProcessor():
 
     def process(self):
         """Import missing information from Steam to Wikidata."""
-        if self.steam_page.is_released():
+        status = self.steam_page.get_release_status()
+        try:
             date = self.steam_page.get_release_date()
-        else:
+        except RuntimeError as error:
+            print(f"{self.steam_page.get_id()}: WARNING: {error}")
             date = None
-            print(f"{self.steam_page.get_id()}: Can't retrieve release date of an unreleased game")
         platforms = self.steam_page.get_platform_items()
         gamemodes = self.steam_page.get_gamemode_items()
         languages = self.steam_page.get_language_items()
@@ -728,7 +739,11 @@ class ItemProcessor():
         if arguments.genres:
             self.add_claims("P136", arguments.genres, "series")
         if date is not None:
-            self.add_claims("P577", [date], "release date")
+            if status == "released":
+                self.add_claims("P577", [date], "release date")
+            elif status == "early access":
+                data = (date, [early_access])
+                self.add_claims_with_qualifiers("P577", "P3831", [data], "early access release date")
         self.add_claims_with_update("P400", platforms, "platform", add_sources=True)
         self.add_claims_with_update("P404", gamemodes, "game mode", add_sources=True)
         self.add_claims_with_qualifiers("P407", "P518", languages, "language")
@@ -800,28 +815,33 @@ class ExistingItemProcessor(ItemProcessor):
 
 class NewItemProcessor(ItemProcessor):
     """
-    ItemProcessor for newly created item (NewItemProcessor would create it automatically).
+    ItemProcessor for newly created item (NewItemProcessor would create it during initialization).
     """
 
     def __init__(self, steam_id):
         steam_page = SteamPage(steam_id)
         title = steam_page.get_title()
-        if steam_page.is_released():
-            year = steam_page.get_release_year()
-        else:
-            year = None
         instance = steam_page.get_instance()
-        if instance not in descriptions_data:
-            raise RuntimeError(f"{instance} items are not supported")
+        status = steam_page.get_release_status()
 
         base_property = None
         base_game = None
-        if instance == "dlc":
+        if instance == "game" and status == "early access":
+            instance = "early access"
+        elif instance == "dlc":
             base_property = "P8646"
             base_game = steam_page.get_dlc_base_game_item()
         elif instance == "mod":
             base_property = "P7075"
             base_game = steam_page.get_mod_base_game_item()
+
+        if status == "released" or instance == "early access":
+            year = steam_page.get_release_year()
+        else:
+            year = None
+
+        if instance not in descriptions_data:
+            raise RuntimeError(f"{instance} items are not supported")
 
         labels = { data[0] : title for data in descriptions_data[instance] }
         if year:
@@ -834,6 +854,7 @@ class NewItemProcessor(ItemProcessor):
             { "labels": labels, "descriptions": descriptions },
             summary=f"Create item for Steam application `{steam_id}`"
         )
+
         super().__init__(item, steam_page)
 
         self.add_claims("P31", [steam_page.get_instance_item()], "instance of")

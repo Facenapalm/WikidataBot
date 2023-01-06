@@ -244,7 +244,7 @@ class SteamPage():
         "Malay": get_item("Q9237"),
         "Malayalam": get_item("Q36236"),
         "Maltese": get_item("Q9166"),
-        "Maori": get_item("Q6122670"),
+        "Maori": get_item("Q36451"),
         "Marathi": get_item("Q1571"),
         "Mongolian": get_item("Q9246"),
         "Nepali": get_item("Q33823"),
@@ -301,7 +301,7 @@ class SteamPage():
         get_item("Q204028"), # subtitles
     ]
 
-    short_month_names = {
+    month_names = {
         "Jan": 1,
         "Feb": 2,
         "Mar": 3,
@@ -314,9 +314,7 @@ class SteamPage():
         "Oct": 10,
         "Nov": 11,
         "Dec": 12,
-    }
 
-    full_month_names = {
         "January": 1,
         "February": 2,
         "March": 3,
@@ -488,8 +486,8 @@ class SteamPage():
         match = re.match(r"^(\d{1,2}) ([A-Z][a-z]{2}), (\d{4})$", date_div)
         if match:
             month_name = match.group(2)
-            if month_name in self.short_month_names:
-                return pywikibot.WbTime(year=int(match.group(3)), month=self.short_month_names[month_name], day=int(match.group(1)))
+            if month_name in self.month_names:
+                return pywikibot.WbTime(year=int(match.group(3)), month=self.month_names[month_name], day=int(match.group(1)))
             else:
                 raise RuntimeError(f"Unknown month abbreviation `{month_name}`")
 
@@ -497,8 +495,8 @@ class SteamPage():
         match = re.match(r"^([A-Z][a-z]{2}) (\d{1,2}), (\d{4})$", date_div)
         if match:
             month_name = match.group(1)
-            if month_name in self.short_month_names:
-                return pywikibot.WbTime(year=int(match.group(3)), month=self.short_month_names[month_name], day=int(match.group(2)))
+            if month_name in self.month_names:
+                return pywikibot.WbTime(year=int(match.group(3)), month=self.month_names[month_name], day=int(match.group(2)))
             else:
                 raise RuntimeError(f"Unknown month abbreviation `{month_name}`")
 
@@ -506,21 +504,25 @@ class SteamPage():
         match = re.match(r"^([A-Z][a-z]+) (\d{4})$", date_div)
         if match:
             month_name = match.group(1)
-            if month_name in self.full_month_names:
-                return pywikibot.WbTime(year=int(match.group(2)), month=self.full_month_names[month_name])
+            if month_name in self.month_names:
+                return pywikibot.WbTime(year=int(match.group(2)), month=self.month_names[month_name])
             else:
                 raise RuntimeError(f"Unknown month name `{month_name}`")
 
         # Q4 2077
         match = re.match(r"^Q([1-4]) (\d{4})", date_div)
         if match:
-            # Wikidata doesn't support quarters of calendar year, so we'll strip it to year only
+            # Wikidata doesn't support quarters of calendar year, so we'll shorten it to year only
             return pywikibot.WbTime(year=int(match.group(2)))
 
         # 2077
         match = re.match(r"^(\d{4})$", date_div)
         if match:
             return pywikibot.WbTime(year=int(match.group(1)))
+
+        # Coming soon
+        if date_div == "Coming soon":
+            raise RuntimeError("No date specified")
 
         raise RuntimeError(f"Unknown date format: `{date_div}`")
 

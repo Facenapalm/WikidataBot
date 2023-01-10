@@ -48,13 +48,13 @@ class IGDBQualifyingBot(QualifyingBot):
         self.wrapper = IGDBWrapper(client_id, access_token)
 
     def request(self, endpoint, query):
+        sleep(.25)
         result = self.wrapper.api_request(endpoint, query).decode("utf-8")
         return json.loads(result)
 
     def get_qualifier_values(self, base_value):
         try:
-            sleep(.25)
-            return [str(self.request("games", f'fields *; where slug="{base_value}";')[0]["id"])]
+            return [str(self.request("games", f'fields id; where slug="{base_value}";')[0]["id"])]
         except:
             return None
 

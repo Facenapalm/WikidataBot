@@ -791,7 +791,6 @@ class ExistingItemProcessor(ItemProcessor):
             "Q111223304", # video game reboot
             "Q111662771", # clothing downloadable content
         }
-        instance_is_correct = False
         for claim in item.claims["P31"]:
             instance = claim.getTarget()
             if instance is None:

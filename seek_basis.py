@@ -102,7 +102,7 @@ class BaseSeekerBot:
         """
         try:
             if item.isRedirectPage():
-                raise RuntimeError(f"{item.title()} is a redirect page")
+                raise RuntimeError(f"item is a redirect page")
             if self.database_prop in item.claims:
                 raise RuntimeError(f"{self.database_prop_label} already set")
 

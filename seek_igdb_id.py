@@ -39,11 +39,22 @@ class IGDBSeekerBot(BaseSeekerBot):
     # based on search() and parse_entry() is not required. We'll just re-implement process_item()
     # instead.
 
-    conditions = {
+    queries = {
         "P1733": [
-            'url = *"/app/{}" & category = 13;', # https://store.steampowered.com/app/220
-            'url = *"/app/{}/"* & category = 13;', # https://store.steampowered.com/app/220/HalfLife_2/
+            # https://store.steampowered.com/app/220
+            ("websites", 'fields game; where url = *"/app/{}" & category = 13;'),
+
+            # https://store.steampowered.com/app/220/HalfLife_2/
+            ("websites", 'fields game; where url = *"/app/{}/"* & category = 13;'),
         ],
+        "P2725": [
+            # https://www.gog.com/game/cyberpunk_2077
+            ("websites", 'fields game; where url = *"/{}" & category = 17;'),
+        ],
+        "P6278": [
+            # https://store.epicgames.com/ru/p/kena-bridge-of-spirits
+            ("websites", 'fields game; where url = *"/{}" & category = 16;'),
+        ]
     }
 
     def __init__(self):
@@ -51,7 +62,7 @@ class IGDBSeekerBot(BaseSeekerBot):
             database_item="Q20056333",
             database_prop="P5794",
             default_matching_prop="P1733",
-            matching_prop_whitelist=["P1733"],
+            matching_prop_whitelist=["P1733", "P2725", "P6278"],
 
             should_set_properties=False,
         )
@@ -75,8 +86,8 @@ class IGDBSeekerBot(BaseSeekerBot):
         matching_value = item.claims[self.matching_prop][0].getTarget()
 
         result = []
-        for condition in self.conditions[self.matching_prop]:
-            result += self.request("websites", "fields game; where " + condition.format(matching_value))
+        for endpoint, query in self.queries[self.matching_prop]:
+            result += self.request(endpoint, query.format(matching_value))
 
         if len(result) == 0:
             raise RuntimeError(f"no IGDB entries are linked to {self.matching_prop_label} `{matching_value}`")

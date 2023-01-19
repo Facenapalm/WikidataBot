@@ -48,7 +48,7 @@ IDS_DATA = {
     },
     "mobygames": {
         "property": "P1933",
-        "mask": r"^https?://www\.mobygames\.com/game/([a-z0-9_\-]+)",
+        "mask": r"^https?://www\.mobygames\.com/game/(?:windows/|dos/|gameboy-color/|macintoshxbox-one/|ps2/|ps1/|ps2/|ps3/|playstation/|playstation-4/|xbox/|xbox-one/|xbox-series/|switch/|n64/|android/|iphone/|ipad/|wii/|oculus-quest/|gameboy/)?([a-z0-9_\-]+)",
         "urldecode": False,
     },
     "pcgamingwiki": {

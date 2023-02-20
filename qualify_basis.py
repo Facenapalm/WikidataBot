@@ -58,7 +58,7 @@ class QualifyingBot:
                     qualifier = pywikibot.Claim(self.repo, self.qualifier_property)
                     qualifier.setTarget(qualifier_value)
                     claim.addQualifier(qualifier, summary=f"Add qualifier to {self.base_property_name} `{base_value}`")
-                    print(f"{base_value}: qualifier set to `{qualifier_value}`")
+                    print(f"{base_value}: qualifier set to `{self.get_verbose_value(qualifier_value)}`")
             except Exception as error:
                 print(f"{base_value}: {error}")
 
@@ -104,3 +104,13 @@ class QualifyingBot:
         if "en" in prop_page.labels:
             return prop_page.labels["en"]
         return prop
+
+    def get_verbose_value(self, value):
+        """If value is a Wikidata Item, return its label; otherwise return raw value."""
+        if isinstance(value, pywikibot.ItemPage):
+            if "en" in value.labels:
+                return value.labels["en"]
+            else:
+                return value.title()
+        else:
+            return value

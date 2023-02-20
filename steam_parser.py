@@ -37,7 +37,7 @@ Mixed input is supported, although the order of IDs might be altered.
 
 A list of elements to process might be obtained from page:
 
-   https://www.wikidata.org/wiki/Wikidata:Database_reports/Constraint_violations/P1733
+    https://www.wikidata.org/wiki/Wikidata:Database_reports/Constraint_violations/P1733
 """
 
 import urllib.request

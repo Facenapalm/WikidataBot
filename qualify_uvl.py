@@ -23,7 +23,7 @@ Add platform (P400) qualifier to UVL game ID (P7555) claims.
 
 See also:
 
-   https://www.wikidata.org/wiki/Wikidata:Database_reports/Constraint_violations/P7555#"Mandatory_Qualifiers"_violations
+    https://www.wikidata.org/wiki/Wikidata:Database_reports/Constraint_violations/P7555#"Mandatory_Qualifiers"_violations
 """
 
 import re
@@ -264,7 +264,7 @@ class UVLQualifyingBot(QualifyingBot):
                 html = response.read().decode("utf-8")
             except urllib.error.HTTPError as error:
                 if error.code == 404:
-                    return None
+                    return []
                 else:
                     raise error
             except Exception as error:
@@ -273,12 +273,12 @@ class UVLQualifyingBot(QualifyingBot):
 
             match = re.search(r"<a class='bold platinfo'.*?>(.*?)</a>", html)
             if not match:
-                return None
+                return []
 
             platform = match.group(1)
             if platform not in self.platform_map:
                 print("{}: unknown platform {}".format(base_value, platform))
-                continue
+                return []
 
             return [self.platform_map[platform]]
 

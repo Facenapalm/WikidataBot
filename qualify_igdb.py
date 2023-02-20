@@ -23,7 +23,7 @@ Extract IGDB numeric ID (P9043) based on IGDB ID (P5794).
 
 See also:
 
-   https://www.wikidata.org/wiki/Wikidata:Database_reports/Constraint_violations/P5794#"Mandatory_Qualifiers"_violations
+    https://www.wikidata.org/wiki/Wikidata:Database_reports/Constraint_violations/P5794#"Mandatory_Qualifiers"_violations
 
 Script requires Twitch Developer Client ID and Client Secret. Place them at
 ./keys/igdb-id.key and ./keys/igdb-secret.key files respectively.

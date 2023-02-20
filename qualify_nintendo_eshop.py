@@ -18,11 +18,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# Add platform (P400) qualifier to Nintendo eShop ID (P8084) claims.
-# 
-# See also:
-# 
-#    https://www.wikidata.org/wiki/Wikidata:Database_reports/Constraint_violations/P8084#"Mandatory_Qualifiers"_violations
+"""
+Add platform (P400) qualifier to Nintendo eShop ID (P8084) claims.
+
+See also:
+
+    https://www.wikidata.org/wiki/Wikidata:Database_reports/Constraint_violations/P8084#"Mandatory_Qualifiers"_violations
+"""
 
 import pywikibot
 from qualify_basis import QualifyingBot

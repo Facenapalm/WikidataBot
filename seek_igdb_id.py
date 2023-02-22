@@ -31,7 +31,7 @@ import requests
 import json
 from time import sleep
 from igdb.wrapper import IGDBWrapper
-from seek_basis import BaseSeekerBot
+from common.seek_basis import BaseSeekerBot
 
 class IGDBSeekerBot(BaseSeekerBot):
     # Unlike most databases, IGDB allows user to directly fetch games that have a link to certain

@@ -33,7 +33,7 @@ import requests
 import json
 from time import sleep
 from igdb.wrapper import IGDBWrapper
-from qualify_basis import QualifyingBot
+from common.qualify_basis import QualifyingBot
 
 class IGDBQualifyingBot(QualifyingBot):
     def __init__(self):

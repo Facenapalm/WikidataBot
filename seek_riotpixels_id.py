@@ -30,8 +30,7 @@ To get started, type:
 import re
 import urllib.request
 from urllib.parse import quote
-from howlongtobeatpy import HowLongToBeat
-from seek_basis import BaseSeekerBot
+from common.seek_basis import BaseSeekerBot
 
 IDS_DATA = [
     {

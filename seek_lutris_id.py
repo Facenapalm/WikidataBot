@@ -33,7 +33,7 @@ import urllib.request
 import time
 import random
 import re
-from seek_basis import BaseSeekerBot
+from common.seek_basis import BaseSeekerBot
 
 IDS_DATA = {
     "igdb": {

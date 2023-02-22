@@ -34,7 +34,7 @@ Script requires RAWG API key, place it at ./keys/rawg.key file.
 import requests
 import re
 from os.path import isfile
-from seek_basis import BaseSeekerBot
+from common.seek_basis import BaseSeekerBot
 
 STORES_DATA = {
     1: {

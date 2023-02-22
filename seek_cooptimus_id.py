@@ -29,7 +29,7 @@ To get started, type:
 import re
 import requests
 import pywikibot
-from seek_basis import BaseSeekerBot
+from common.seek_basis import BaseSeekerBot
 
 class CoOptimusSeekerBot(BaseSeekerBot):
     def __init__(self):

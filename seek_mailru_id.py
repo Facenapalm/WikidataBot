@@ -28,7 +28,7 @@ To get started, type:
 
 import requests
 import re
-from seek_basis import BaseSeekerBot
+from common.seek_basis import BaseSeekerBot
 
 class MailRuSeekerBot(BaseSeekerBot):
     def __init__(self):

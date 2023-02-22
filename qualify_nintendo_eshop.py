@@ -27,7 +27,7 @@ See also:
 """
 
 import pywikibot
-from qualify_basis import QualifyingBot
+from common.qualify_basis import QualifyingBot
 
 class EShopQualifyingBot(QualifyingBot):
     def __init__(self):

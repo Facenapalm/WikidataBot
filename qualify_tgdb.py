@@ -32,7 +32,7 @@ import re
 import urllib.request
 import pywikibot
 from pywikibot.data.sparql import SparqlQuery
-from qualify_basis import QualifyingBot
+from common.qualify_basis import QualifyingBot
 
 class TGDBQualifyingBot(QualifyingBot):
     def __init__(self):

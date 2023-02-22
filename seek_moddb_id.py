@@ -30,7 +30,7 @@ import re
 import time
 import requests
 import pywikibot
-from seek_basis import BaseSeekerBot
+from common.seek_basis import BaseSeekerBot
 
 class ModDBSeekerBot(BaseSeekerBot):
     def __init__(self):

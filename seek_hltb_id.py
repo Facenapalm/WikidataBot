@@ -29,7 +29,7 @@ To get started, type:
 import re
 import urllib.request
 from howlongtobeatpy import HowLongToBeat
-from seek_basis import BaseSeekerBot
+from common.seek_basis import BaseSeekerBot
 
 class HLTBSeekerBot(BaseSeekerBot):
     def __init__(self):

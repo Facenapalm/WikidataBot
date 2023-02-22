@@ -29,7 +29,7 @@ See also:
 import re
 import urllib.request
 import pywikibot
-from qualify_basis import QualifyingBot
+from common.qualify_basis import QualifyingBot
 
 class UVLQualifyingBot(QualifyingBot):
     def __init__(self):

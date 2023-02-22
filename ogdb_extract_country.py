@@ -80,6 +80,8 @@ def get_country(ogdb_id):
 
 def main():
     repo = pywikibot.Site()
+    repo.login()
+
     OGDB = pywikibot.ItemPage(repo, "Q60315954")
     country_items = {
         "Kanada": pywikibot.ItemPage(repo, "Q16"),

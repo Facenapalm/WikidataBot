@@ -136,6 +136,7 @@ arguments = None
 output = None
 
 repo = pywikibot.Site()
+repo.login()
 get_item = lambda x: pywikibot.ItemPage(repo, x)
 
 steam = get_item("Q337535")

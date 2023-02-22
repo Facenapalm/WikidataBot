@@ -73,8 +73,9 @@ class BaseSeekerBot:
             parsed by parse_entry() method to Wikidata.
         """
         self.repo = pywikibot.Site()
-        self.verbose_names_cache = {}
+        self.repo.login()
 
+        self.verbose_names_cache = {}
         self.database_item = pywikibot.ItemPage(self.repo, database_item)
         self.database_prop = database_prop
         self.database_prop_label = self.get_verbose_name(database_prop)

@@ -63,6 +63,7 @@ def main():
         print("Can't detect missing Indie DB entries, script needs to be updated")
         return
     repo = pywikibot.Site()
+    repo.login()
     for line in open(sys.argv[1]):
         item = pywikibot.ItemPage(repo, line)
         if INIDEDB_PROP in item.claims:

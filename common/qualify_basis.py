@@ -33,6 +33,7 @@ class QualifyingBot:
 
     def __init__(self, base_property, qualifier_property):
         self.repo = pywikibot.Site()
+        self.repo.login()
         self.base_property = base_property
         self.base_property_name = self.get_verbose_property_name(base_property)
         self.qualifier_property = qualifier_property

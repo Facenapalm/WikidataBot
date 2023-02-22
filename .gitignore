@@ -3,7 +3,7 @@ apicache-py3
 keys
 steam_cache
 throttle.ctrl
-pywikibot.lwp
+pywikibot*.lwp
 user-config.py
 user-password.py
 *.txt

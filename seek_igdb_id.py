@@ -27,10 +27,7 @@ To get started, type:
 """
 
 import pywikibot
-import requests
-import json
-from time import sleep
-from igdb.wrapper import IGDBWrapper
+from common.igdb_wrapper import IGDB
 from common.seek_basis import BaseSeekerBot
 
 class IGDBSeekerBot(BaseSeekerBot):
@@ -67,16 +64,7 @@ class IGDBSeekerBot(BaseSeekerBot):
             should_set_properties=False,
         )
         self.numeric_prop = "P9043"
-
-        client_id = open("keys/igdb-id.key").read()
-        client_secret = open("keys/igdb-secret.key").read()
-        access_token = requests.post(f"https://id.twitch.tv/oauth2/token?client_id={client_id}&client_secret={client_secret}&grant_type=client_credentials").json()["access_token"]
-        self.wrapper = IGDBWrapper(client_id, access_token)
-
-    def request(self, endpoint, query):
-        sleep(.25)
-        result = self.wrapper.api_request(endpoint, query).decode("utf-8")
-        return json.loads(result)
+        self.wrapper = IGDB()
 
     def seek_database_entry(self, item):
         if self.matching_prop not in item.claims:
@@ -87,7 +75,7 @@ class IGDBSeekerBot(BaseSeekerBot):
 
         result = []
         for endpoint, query in self.queries[self.matching_prop]:
-            result += self.request(endpoint, query.format(matching_value))
+            result += self.wrapper.request(endpoint, query.format(matching_value))
 
         if len(result) == 0:
             raise RuntimeError(f"no IGDB entries are linked to {self.matching_prop_label} `{matching_value}`")
@@ -95,7 +83,7 @@ class IGDBSeekerBot(BaseSeekerBot):
             raise RuntimeError(f"several IGDB entries are linked to {self.matching_prop_label} `{matching_value}`")
 
         igdb_id = str(result[0]["game"])
-        igdb_slug = self.request("games", f"fields slug; where id = {igdb_id};")[0]["slug"]
+        igdb_slug = self.wrapper.get_slug_by_id(igdb_id)
 
         return (igdb_slug, igdb_id)
 

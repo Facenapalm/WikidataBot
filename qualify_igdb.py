@@ -29,10 +29,7 @@ Script requires Twitch Developer Client ID and Client Secret. Place them at
 ./keys/igdb-id.key and ./keys/igdb-secret.key files respectively.
 """
 
-import requests
-import json
-from time import sleep
-from igdb.wrapper import IGDBWrapper
+from common.igdb_wrapper import IGDB
 from common.qualify_basis import QualifyingBot
 
 class IGDBQualifyingBot(QualifyingBot):
@@ -41,22 +38,14 @@ class IGDBQualifyingBot(QualifyingBot):
             base_property="P5794",
             qualifier_property="P9043",
         )
-
-        client_id = open("keys/igdb-id.key").read()
-        client_secret = open("keys/igdb-secret.key").read()
-        access_token = requests.post(f"https://id.twitch.tv/oauth2/token?client_id={client_id}&client_secret={client_secret}&grant_type=client_credentials").json()["access_token"]
-        self.wrapper = IGDBWrapper(client_id, access_token)
-
-    def request(self, endpoint, query):
-        sleep(.25)
-        result = self.wrapper.api_request(endpoint, query).decode("utf-8")
-        return json.loads(result)
+        self.wrapper = IGDB()
 
     def get_qualifier_values(self, base_value):
-        try:
-            return [str(self.request("games", f'fields id; where slug="{base_value}";')[0]["id"])]
-        except:
-            return None
+        igdb_id = self.wrapper.get_id_by_slug(base_value)
+        if igdb_id is not None:
+            return [igdb_id]
+        else:
+            return []
 
 if __name__ == "__main__":
     IGDBQualifyingBot().run()

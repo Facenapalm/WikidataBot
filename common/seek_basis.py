@@ -186,11 +186,11 @@ class BaseSeekerBot:
 
     def search(self, query, max_results=None):
         """Search in given database and return a list of entry IDs."""
-        raise NotImplementedError("SeekerBot.search() is not implemented")
+        raise NotImplementedError(f"{self.__class__.__name__}.search() is not implemented")
 
     def parse_entry(self, entry_id):
         """Parse entry and return { property: value } dict."""
-        raise NotImplementedError("SeekerBot.parse_entry() is not implemented")
+        raise NotImplementedError(f"{self.__class__.__name__}.parse_entry() is not implemented")
 
     # Private methods.
 

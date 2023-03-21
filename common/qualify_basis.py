@@ -95,7 +95,7 @@ class QualifyingBot:
 
     def get_qualifier_values(self, base_value):
         """Use the property value to return the list of qualifier values to add."""
-        raise NotImplementedError("SeekerBot.get_qualifier_value() is not implemented")
+        raise NotImplementedError(f"{self.__class__.__name__}.get_qualifier_value() is not implemented")
 
     # Private methods.
 

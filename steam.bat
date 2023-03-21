@@ -9,6 +9,7 @@ python seek_lutris_id.py temp.txt
 python seek_mailru_id.py temp.txt
 python seek_moddb_id.py temp.txt
 python seek_riotpixels_id.py temp.txt
+python seek_stopgame_id.py temp.txt
 
 python seek_indiedb_id.py temp.txt
 python qualify_igdb.py temp.txt

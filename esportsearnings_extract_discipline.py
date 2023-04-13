@@ -96,7 +96,10 @@ class EsportsEarningsBot():
                 claim.addSources([statedin, source_id, retrieved], summary="Adding Esports Earnings as a source.")
 
                 item.addClaim(claim, summary="Add sports discipline competed in based on Esports Earnings database.")
-                print(f"{item.title()}: added discipline `{discipline.title()}`")
+                if "en" in discipline.labels:
+                    print(f"{item.title()}: added discipline `{discipline.labels['en']}`")
+                else:
+                    print(f"{item.title()}: added discipline `{discipline.title()}`")
         except RuntimeError as error:
             print(f"{item.title()}: {error}")
 

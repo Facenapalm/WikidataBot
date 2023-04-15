@@ -20,12 +20,10 @@
 
 """A basis for seek_xxx_id.py scripts."""
 
+import pywikibot
 from argparse import ArgumentParser
 from datetime import datetime
 from common.utils import get_current_wbtime, parse_input_source
-
-import pywikibot
-from pywikibot import pagegenerators as pg
 
 def get_first_key(dictionary):
     """Return first iterable key of the dictionary."""

@@ -19,13 +19,19 @@
 # SOFTWARE.
 
 """
-Process changed and deprecated IGDB slugs (P5794) based on IGDB numeric ID (P9043).
+Process changed and deprecate withdrawn IGDB slugs (P5794) based on IGDB numeric ID (P9043)
+qualifier.
+
+Usage:
+
+    python igdb_check_slugs.py
 """
 
 import re
 import pywikibot
 from pywikibot.data.sparql import SparqlQuery
 from common.igdb_wrapper import IGDB
+from argparse import ArgumentParser
 
 class IGDBMaintainingBot():
     QUERY = """
@@ -81,6 +87,11 @@ class IGDBMaintainingBot():
         print(f"{item_id}: `{old_slug}` -> `{new_slug}`")
 
     def run(self):
+        parser = ArgumentParser(description="Process changed and deprecate withdrawn IGDB slugs" \
+            "(P5794) based on IGDB numeric ID (P9043) qualifier. Script checks all set IGDB slugs " \
+            "by using SPARQL query, no arguments required.")
+        args = parser.parse_args()
+
         self.reset_counters()
 
         sparql = SparqlQuery()

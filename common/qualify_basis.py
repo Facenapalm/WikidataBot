@@ -20,10 +20,9 @@
 
 """A basis for qualify_xxx.py scripts."""
 
-from argparse import ArgumentParser
-
 import pywikibot
-from pywikibot import pagegenerators as pg
+from argparse import ArgumentParser
+from common.utils import parse_input_source
 
 class QualifyingBot:
     """
@@ -75,21 +74,15 @@ class QualifyingBot:
         parser.add_argument("input", nargs="?", default="all", help="A path to the file with the list of IDs of items to process (Qnnn) or a keyword \"all\"")
         args = parser.parse_args()
 
-        if args.input == "all":
-            query = f"""
-                SELECT ?item {{
-                    ?item p:{self.base_property} ?s
-                    FILTER NOT EXISTS {{ ?s pq:{self.qualifier_property} [] }}
-                }}
-            """
-            generator = pg.WikidataSPARQLPageGenerator(query, site=self.repo)
-            for item in generator:
-                self.process_item(item)
-        else:
-            with open(args.input, encoding="utf-8") as listfile:
-                for line in listfile:
-                    item = pywikibot.ItemPage(self.repo, line)
-                    self.process_item(item)
+        query = f"""
+            SELECT ?item {{
+                ?item p:{self.base_property} ?s
+                FILTER NOT EXISTS {{ ?s pq:{self.qualifier_property} [] }}
+            }}
+        """
+
+        for item in parse_input_source(self.repo, args.input, query):
+            self.process_item(item)
 
     # Virtual method to be implemented in inherited classes.
 

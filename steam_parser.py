@@ -946,12 +946,12 @@ def parse_item_page_arg(arg_value):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Extract various video game data from Steam based on Steam application ID.")
-    parser.add_argument("input", help="A path to file with list of IDs of items to process (Qnnn) or or Steam IDs to be included in newly created items (just number). Mixed input is supported.")
-    parser.add_argument("-publisher", "-p", type=parse_item_page_arg, nargs="+", action="store", dest="publishers", help="Wikidata element(s) to state in P123 (optional)")
-    parser.add_argument("-genres", "-g", type=parse_item_page_arg, nargs="+", action="store", dest="genres", help="Wikidata element(s) to state in P136 (optional)")
-    parser.add_argument("-developer", "-d", type=parse_item_page_arg, nargs="+", action="store", dest="developers", help="Wikidata element(s) to state in P178 (optional)")
-    parser.add_argument("-series", "-s", type=parse_item_page_arg, action="store", dest="series", help="Wikidata element to state in P179 (optional)")
-    parser.add_argument("-output", "-o", action="store", dest="output", help="A path to a file to fill with a list of IDs of the processed items, including newly created (optional)")
+    parser.add_argument("input", help="a path to file with list of IDs of items to process (Qnnn) or Steam IDs to be included in newly created items (just number); mixed input is supported")
+    parser.add_argument("-publisher", "-p", type=parse_item_page_arg, nargs="+", action="store", dest="publishers", help="wikidata element(s) to state in P123 (optional)")
+    parser.add_argument("-genres", "-g", type=parse_item_page_arg, nargs="+", action="store", dest="genres", help="wikidata element(s) to state in P136 (optional)")
+    parser.add_argument("-developer", "-d", type=parse_item_page_arg, nargs="+", action="store", dest="developers", help="wikidata element(s) to state in P178 (optional)")
+    parser.add_argument("-series", "-s", type=parse_item_page_arg, action="store", dest="series", help="wikidata element to state in P179 (optional)")
+    parser.add_argument("-output", "-o", action="store", dest="output", help="a path to a file to fill with a list of IDs of the processed items, including newly created (optional)")
 
     arguments = parser.parse_args()
     if arguments.output:

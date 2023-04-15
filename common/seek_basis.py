@@ -147,9 +147,9 @@ class BaseSeekerBot:
             parser_arguments["epilog"] = "Supported base properties: {}".format(", ".join(sorted(self.matching_prop_whitelist)))
 
         parser = ArgumentParser(**parser_arguments)
-        parser.add_argument("input", help="A path to the file with the list of IDs of items to process (Qnnn) or a keyword \"all\"")
-        parser.add_argument("base", nargs="?", help=f"A property to use to match Wikidata items with database entries. If ommited, defaults to \"{self.matching_prop}\" ({self.matching_prop_label})")
-        parser.add_argument("-limit", "-l", type=int, default=0, help="A number of items to process (optional, only works with keyword \"all\")")
+        parser.add_argument("input", help="either a path to the file with the list of IDs of items to process (Qnnn) or a keyword \"all\"")
+        parser.add_argument("base", nargs="?", help=f"a property to use to match Wikidata items with database entries; defaults to \"{self.matching_prop}\" ({self.matching_prop_label})")
+        parser.add_argument("-limit", "-l", type=int, default=0, help="a number of items to process (optional, only works with keyword \"all\")")
         args = parser.parse_args()
 
         try:

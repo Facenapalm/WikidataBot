@@ -19,7 +19,7 @@
 # SOFTWARE.
 
 """
-Extract sports discipline competed in (P2416) based on Esports Earnings player ID (P10803).
+Add sports discipline competed in (P2416) based on Esports Earnings player ID (P10803).
 """
 
 import re
@@ -100,8 +100,8 @@ class EsportsEarningsBot():
             print(f"{item.title()}: {error}")
 
     def run(self):
-        parser = ArgumentParser(description="Extract sports discipline competed in (P2416) based on Esports Earnings player ID (P10803).")
-        parser.add_argument("input", nargs="?", default="all", help="A path to the file with the list of IDs of items to process (Qnnn) or a keyword \"all\" (optional, treated as \"all\" by default)")
+        parser = ArgumentParser(description="Add sports discipline competed in (P2416) based on Esports Earnings player ID (P10803).")
+        parser.add_argument("input", nargs="?", default="all", help="either a path to the file with the list of IDs of items to process (Qnnn) or a keyword \"all\"; treated as \"all\" by default")
         args = parser.parse_args()
 
         query = """

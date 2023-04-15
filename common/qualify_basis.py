@@ -71,7 +71,7 @@ class QualifyingBot:
             self.base_property
         )
         parser = ArgumentParser(description=description)
-        parser.add_argument("input", nargs="?", default="all", help="A path to the file with the list of IDs of items to process (Qnnn) or a keyword \"all\"")
+        parser.add_argument("input", nargs="?", default="all", help="either a path to the file with the list of IDs of items to process (Qnnn) or a keyword \"all\"")
         args = parser.parse_args()
 
         query = f"""

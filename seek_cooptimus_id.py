@@ -38,6 +38,7 @@ class CoOptimusSeekerBot(BaseSeekerBot):
             database_prop="P8229",
             default_matching_prop="P1733",
             matching_prop_whitelist=["P1733"],
+            additional_query_lines=["?item wdt:P404 wd:Q1758804 ."],
 
             should_set_properties=False,
         )
@@ -183,21 +184,6 @@ class CoOptimusSeekerBot(BaseSeekerBot):
                 self.set_cooptimus_id(item, crosslink, platform, "Add {} for platform `{}` (crosslinked with `{}`)".format(self.database_prop_label, platform, entry_id))
         except RuntimeError as error:
             print("{}: {}".format(item.title(), error))
-
-    def process_all_items(self, limit=None):
-        # only process items with game mode (P404) = co-op mode (Q1758804)
-        query = """
-            SELECT ?item {
-                ?item p:P1733 [] .
-                ?item wdt:P404 wd:Q1758804 .
-                FILTER NOT EXISTS { ?item p:P8229 [] }
-            }
-        """
-        if limit:
-            query += "LIMIT {}".format(limit)
-        generator = pywikibot.pagegenerators.WikidataSPARQLPageGenerator(query, site=self.repo)
-        for item in generator:
-            self.process_item(item)
 
 if __name__ == "__main__":
     CoOptimusSeekerBot().run()

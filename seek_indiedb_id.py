@@ -21,66 +21,68 @@
 """
 Add Indie DB game ID (P6717) based on Mod DB game ID (P6774), if available.
 
-Usage:
+To get started, type:
 
-    python seek_indiedb_id.py [input_filename]
+    python seek_indiedb_id.py -h
 """
 
 import re
-import sys
 import time
 import requests
 import pywikibot
+from common.seek_basis import BaseSeekerBot
 
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "Accept-Charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
-    "Accept-Encoding": "none",
-    "Accept-Language": "en-US,en;q=0.8",
-    "Connection": "keep-alive"
-}
+class IndieDBSeekerBot(BaseSeekerBot):
+    # Since Indie DB is a subset of Mod DB, we can just check whether Mod DB ID is suitable
+    # and copy it into Indie DB ID property.
 
-INIDEDB_PROP = "P6717"
-MODDB_PROP = "P6774"
+    def check_slug(self, slug):
+        if slug is None:
+            return False
+        response = requests.get("https://www.indiedb.com/games/{}".format(slug), headers=self.headers)
+        time.sleep(2)
+        if response:
+            return "NOT available on Indie DB" not in response.text
+        else:
+            print("WARNING: failed to get `{}`".format(slug))
+            return False
 
-def check_slug(slug):
-    if slug is None:
-        return False
-    response = requests.get("https://www.indiedb.com/games/{}".format(slug), headers=HEADERS)
-    time.sleep(2)
-    if response:
-        return "NOT available on Indie DB" not in response.text
-    else:
-        print("WARNING: failed to get `{}`".format(slug))
-        return False
+    def __init__(self):
+        super().__init__(
+            database_item="Q60188888",
+            database_prop="P6717",
+            default_matching_prop="P6774",
+            matching_prop_whitelist=["P6774"],
 
-def main():
-    if len(sys.argv) != 2:
-        print("Usage: python seek_indiedb_id.py [input_filename]")
-        return
-    if check_slug("cyberpunk-2077"):
-        print("Can't detect missing Indie DB entries, script needs to be updated")
-        return
-    repo = pywikibot.Site()
-    repo.login()
-    for line in open(sys.argv[1]):
-        item = pywikibot.ItemPage(repo, line)
-        if INIDEDB_PROP in item.claims:
-            print("{}: Indie DB game ID already set".format(item.title()))
-            continue
-        if MODDB_PROP not in item.claims:
-            print("{}: no Mod DB game ID set".format(item.title()))
-            continue
-        for moddb_claim in item.claims[MODDB_PROP]:
-            slug = moddb_claim.getTarget()
-            if check_slug(slug):
-                claim = pywikibot.Claim(repo, INIDEDB_PROP)
+            should_set_properties=False,
+        )
+
+        self.headers = {
+            "User-Agent": "Wikidata connecting bot",
+        }
+
+        if self.check_slug("cyberpunk-2077"):
+            raise RuntimeError("Can't detect missing Indie DB entries, script needs to be updated")
+
+    def process_item(self, item):
+        try:
+            if item.isRedirectPage():
+                raise RuntimeError("item is a redirect page")
+            if self.database_prop in item.claims:
+                raise RuntimeError(f"{self.database_prop_label} already set")
+            if self.matching_prop not in item.claims:
+                raise RuntimeError(f"{self.matching_prop_label} not found in the item")
+
+            for moddb_claim in item.claims[self.matching_prop]:
+                slug = moddb_claim.getTarget()
+                if not self.check_slug(slug):
+                    raise RuntimeError("`{}` not found in Indie DB".format(slug))
+                claim = pywikibot.Claim(self.repo, self.database_prop)
                 claim.setTarget(slug)
                 item.addClaim(claim, summary="Add Indie DB game ID based on Mod DB game ID")
                 print("{}: added Indie DB game ID `{}`".format(item.title(), slug))
-            else:
-                print("{}: `{}` not found in Indie DB".format(item.title(), slug))
+        except RuntimeError as error:
+            print(f"{item.title()}: {error}")
 
 if __name__ == "__main__":
-    main()
+    IndieDBSeekerBot().run()

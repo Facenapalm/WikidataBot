@@ -28,11 +28,7 @@ import pywikibot
 from pywikibot import pagegenerators as pg
 from pywikibot.data.sparql import SparqlQuery
 from argparse import ArgumentParser
-from datetime import datetime
-
-def get_current_wbtime():
-    timestamp = datetime.utcnow()
-    return pywikibot.WbTime(year=timestamp.year, month=timestamp.month, day=timestamp.day)
+from common.utils import get_current_wbtime, parse_input_source
 
 class EsportsEarningsBot():
     def __init__(self):
@@ -105,25 +101,19 @@ class EsportsEarningsBot():
 
     def run(self):
         parser = ArgumentParser(description="Extract sports discipline competed in (P2416) based on Esports Earnings player ID (P10803).")
-        parser.add_argument("input", nargs="?", default="all", help="A path to the file with the list of IDs of items to process (Qnnn) or a keyword \"all\"")
+        parser.add_argument("input", nargs="?", default="all", help="A path to the file with the list of IDs of items to process (Qnnn) or a keyword \"all\" (optional, treated as \"all\" by default)")
         args = parser.parse_args()
 
-        if args.input == "all":
-            query = """
-                SELECT ?item {
-                    ?item wdt:P10803 [] .
-                    ?item wdt:P106 wd:Q4379701 .
-                    FILTER NOT EXISTS { ?item p:P2416 [] }
-                }
-            """
-            generator = pg.WikidataSPARQLPageGenerator(query, site=self.repo)
-            for item in generator:
-                self.process_item(item)
-        else:
-            with open(args.input, encoding="utf-8") as listfile:
-                for line in listfile:
-                    item = pywikibot.ItemPage(self.repo, line)
-                    self.process_item(item)
+        query = """
+            SELECT ?item {
+                ?item wdt:P10803 [] .
+                ?item wdt:P106 wd:Q4379701 .
+                FILTER NOT EXISTS { ?item p:P2416 [] }
+            }
+        """
+
+        for item in parse_input_source(self.repo, args.input, query):
+            self.process_item(item)
 
 if __name__ == "__main__":
     EsportsEarningsBot().run()

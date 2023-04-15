@@ -22,6 +22,7 @@
 
 from argparse import ArgumentParser
 from datetime import datetime
+from common.utils import get_current_wbtime, parse_input_source
 
 import pywikibot
 from pywikibot import pagegenerators as pg
@@ -29,11 +30,6 @@ from pywikibot import pagegenerators as pg
 def get_first_key(dictionary):
     """Return first iterable key of the dictionary."""
     return next(iter(dictionary))
-
-def get_current_wbtime():
-    """Get pywikibot.WbTime object describing the current date in UTC."""
-    timestamp = datetime.utcnow()
-    return pywikibot.WbTime(year=timestamp.year, month=timestamp.month, day=timestamp.day)
 
 
 class BaseSeekerBot:
@@ -57,8 +53,8 @@ class BaseSeekerBot:
     """
 
     def __init__(self, database_item, database_prop, default_matching_prop,
-                 matching_prop_whitelist=None, should_check_aliases=True,
-                 should_set_properties=True):
+                 matching_prop_whitelist=None, additional_query_lines=[],
+                 should_check_aliases=True, should_set_properties=True):
         """
         database_item - Wikidata item ID (Qnnn) that describes this database to
             use in "stated in" references.
@@ -67,6 +63,9 @@ class BaseSeekerBot:
             by default.
         matching_prop_whitelist - Wikidata properties that are allowed to use as
             a matching property. If set, it must include default_matching_prop.
+        additional_query_lines - lines to add to SPARQL query while executing
+            run() with "all" set as an source. For instance, you can add
+            additional filters for `?item`.
         should_check_aliases - if False, bot would seek a database entry using
             item label only. If True, bot would also use item aliases.
         should_set_properties - if set, bot would also upload the properties
@@ -79,6 +78,8 @@ class BaseSeekerBot:
         self.database_item = pywikibot.ItemPage(self.repo, database_item)
         self.database_prop = database_prop
         self.database_prop_label = self.get_verbose_name(database_prop)
+
+        self.additional_query_lines = "\n".join(additional_query_lines)
 
         self.matching_prop_whitelist = matching_prop_whitelist
         self.change_matching_property(default_matching_prop)
@@ -133,34 +134,15 @@ class BaseSeekerBot:
         except RuntimeError as error:
             print(f"{item.title()}: {error}")
 
-    def process_file(self, filename):
-        """
-        Process all items from the file.
-        Given file should contain a list of items to process (Qnnn), one per line.
-        """
-        with open(filename, encoding="utf-8") as listfile:
-            for line in listfile:
-                item = pywikibot.ItemPage(self.repo, line)
-                self.process_item(item)
-
-    def process_all_items(self, limit=None):
-        """Process items that have matching property, but no link to this database."""
-        query = f"""
-            SELECT ?item {{
-                ?item p:{self.matching_prop} [] .
-                FILTER NOT EXISTS {{ ?item p:{self.database_prop} [] }}
-            }}
-        """
-        if limit:
-            query += f"LIMIT {limit}"
-        generator = pg.WikidataSPARQLPageGenerator(query, site=self.repo)
-        for item in generator:
-            self.process_item(item)
-
     def run(self):
         """Parse command line arguments and process items accordingly."""
+        matching_property_description = "matching property (second positional argument)"
+        if self.matching_prop_whitelist:
+            if len(self.matching_prop_whitelist) == 1:
+                matching_property_description = f"{self.matching_prop_label} ({self.matching_prop})"
+
         parser_arguments = {}
-        parser_arguments["description"] = f"Add {self.database_prop_label} ({self.database_prop}) based on matching property (second positional argument)."
+        parser_arguments["description"] = f"Add {self.database_prop_label} ({self.database_prop}) based on {matching_property_description}."
         if self.should_set_properties:
             parser_arguments["description"] += f" Then import data based on {self.database_prop_label}."
         if self.matching_prop_whitelist:
@@ -175,10 +157,19 @@ class BaseSeekerBot:
         try:
             if args.base:
                 self.change_matching_property(args.base)
-            if args.input == "all":
-                self.process_all_items(limit=args.limit)
-            else:
-                self.process_file(args.input)
+
+            query = f"""
+                SELECT ?item {{
+                    ?item p:{self.matching_prop} [] .
+                    {self.additional_query_lines}
+                    FILTER NOT EXISTS {{ ?item p:{self.database_prop} [] }}
+                }}
+            """
+            if args.limit:
+                query += f"LIMIT {args.limit}"
+
+            for item in parse_input_source(self.repo, args.input, query):
+                self.process_item(item)
         except Exception as error:
             print(error)
 

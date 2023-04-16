@@ -40,7 +40,7 @@ Q4115189
 
 The script does not set developer, publisher, series and genres. However, if you're processing the series of similar games, you can pass them as named arguments. For instance, `-developer Q193559` would set Valve (Q193559) as a developer for each processed or created item. Launch the script with `-h` key to get the list of available arguments.
 
-`-o [filename]` key would create a file and fill it with a list of processed or created item IDs. You can later use it in different bots, e. g. [ID Seekers](#id-seekers).
+`-o [filename]` key would create a file and fill it with a list of processed or created item IDs. You can later use it in other bots, e. g. [ID Seekers](#id-seekers).
 
 ## ID Seekers
 
@@ -49,7 +49,7 @@ The `seek_xxx_id.py` scripts are connecting Wikidata items with given database b
 Generally the algorithm of these scripts is the following (see [common/seek_basis.py](https://github.com/Facenapalm/WikidataBot/blob/main/common/seek_basis.py)):
 1. Make a search request to a database using item label or alias as a query.
 2. Parse each found entry to get external links it contains.
-3. If there's a match between entry's external link and item's external ID, link the item to this entry.
+3. If there's a match between entry's external link and item's external ID, link this entry to the item.
 
 Usage:
 ```
@@ -59,7 +59,7 @@ python seek_xxx_id.py %input_source% %base_property%
 - `%base_property%` is the property ID (Pnnn) that would be used as an matching property.
 - Use `-h` key to get information about specific script, including the list of supported base properties.
 
-Most of the scripts are supporting Steam application ID (P1733) as base property. That in combination with [steam_parser.py](#steam-parser) allows user to create well filled items with minimal effort. [steam.bat](https://github.com/Facenapalm/WikidataBot/blob/main/steam.bat) is an example batch file that creates items for Steam application IDs listed in `input.txt` file.
+Most of the scripts are supporting Steam application ID (P1733) as the base property. That in combination with [steam_parser.py](#steam-parser) allows user to create well filled items with minimal effort. [steam.bat](https://github.com/Facenapalm/WikidataBot/blob/main/steam.bat) is an example batch file that creates items for Steam application IDs listed in `input.txt` file.
 
 ## Other Scripts
 - `qualify_xxx.py` is a set of bots that are adding required qualifiers (usually platform, P400) to certain external ID.

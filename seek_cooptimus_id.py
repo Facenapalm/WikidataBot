@@ -38,7 +38,7 @@ class CoOptimusSeekerBot(BaseSeekerBot):
             database_prop="P8229",
             default_matching_prop="P1733",
             matching_prop_whitelist=["P1733"],
-            additional_query_lines=["?item wdt:P404 wd:Q1758804 ."],
+            additional_query_lines=["?item wdt:P404 wd:Q1758804 ."], # co-op games only
 
             should_set_properties=False,
         )

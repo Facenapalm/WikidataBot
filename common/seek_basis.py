@@ -173,6 +173,10 @@ class BaseSeekerBot:
 
     # Virtual methods to be implemented in inherited classes.
 
+    def preprocess_query(self, query):
+        """Optimize search request."""
+        return query
+
     def search(self, query, max_results=None):
         """Search in given database and return a list of entry IDs."""
         raise NotImplementedError(f"{self.__class__.__name__}.search() is not implemented")
@@ -225,24 +229,31 @@ class BaseSeekerBot:
             # any language is better than none
             lang = get_first_key(item.labels)
 
-        checked_candidates = set()
+        processed_candidates = set()
 
-        for candidate in self.search(item.labels[lang]):
-            checked_candidates.add(candidate)
+        query = self.preprocess_query(item.labels[lang])
+        for candidate in self.search(query, max_results=5):
             properties = self.parse_entry(candidate)
             if self.matching_prop in properties:
                 if properties[self.matching_prop] == matching_value:
                     return (candidate, properties)
+            processed_candidates.add(candidate)
+
+        processed_queries = { query }
 
         if self.should_check_aliases and lang in item.aliases:
             for alias in item.aliases[lang]:
-                for candidate in self.search(alias, max_results=1):
-                    if candidate in checked_candidates:
+                query = self.preprocess_query(alias)
+                if query in processed_queries:
+                    continue
+                for candidate in self.search(query, max_results=1):
+                    if candidate in processed_candidates:
                         continue
-                    checked_candidates.add(candidate)
                     properties = self.parse_entry(candidate)
                     if self.matching_prop in properties:
                         if properties[self.matching_prop] == matching_value:
                             return (candidate, properties)
+                    processed_candidates.add(candidate)
+                processed_queries.add(query)
 
         raise RuntimeError(f"no suitable {self.database_prop_label} found")

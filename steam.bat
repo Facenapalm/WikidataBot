@@ -3,6 +3,7 @@ python steam_parser.py input.txt %* -o temp.txt
 python seek_igdb_id.py temp.txt
 python seek_rawg_id.py temp.txt
 
+python seek_adventuregamers_id.py temp.txt
 python seek_cooptimus_id.py temp.txt
 python seek_hltb_id.py temp.txt
 python seek_indiemag_id.py temp.txt

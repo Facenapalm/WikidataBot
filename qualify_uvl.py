@@ -27,11 +27,15 @@ See also:
 """
 
 import re
-import urllib.request
+import requests
 import pywikibot
 from common.qualify_basis import QualifyingBot
 
 class UVLQualifyingBot(QualifyingBot):
+    headers = {
+        'User-Agent': 'Wikidata connecting bot',
+    }
+
     def __init__(self):
         super().__init__(
             base_property="P7555",
@@ -247,40 +251,21 @@ class UVLQualifyingBot(QualifyingBot):
         }
 
     def get_qualifier_values(self, base_value):
-        attempts = 3
-        headers = {
-            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
-            "Accept-Encoding": "none",
-            "Accept-Language": "en-US,en;q=0.8",
-            "Connection": "keep-alive"
-        }
-        url = "https://www.uvlist.net/game-{}".format(base_value)
-        for attempt_no in range(attempts):
-            try:
-                request = urllib.request.Request(url, None, headers)
-                response = urllib.request.urlopen(request)
-                html = response.read().decode("utf-8")
-            except urllib.error.HTTPError as error:
-                if error.code == 404:
-                    return []
-                else:
-                    raise error
-            except Exception as error:
-                if attempt_no == (attempts - 1):
-                    raise error
+        response = requests.get(f'https://www.uvlist.net/game-{base_value}', headers=self.headers)
+        if not response:
+            return []
+        html = response.text
 
-            match = re.search(r"<a class='bold platinfo'.*?>(.*?)</a>", html)
-            if not match:
-                return []
+        match = re.search(r"<a class='bold platinfo'.*?>(.*?)</a>", html)
+        if not match:
+            return []
 
-            platform = match.group(1)
-            if platform not in self.platform_map:
-                print("{}: unknown platform {}".format(base_value, platform))
-                return []
+        platform = match.group(1)
+        if platform not in self.platform_map:
+            print(f"{base_value}: unknown platform {platform}")
+            return []
 
-            return [self.platform_map[platform]]
+        return [self.platform_map[platform]]
 
 if __name__ == "__main__":
     UVLQualifyingBot().run()

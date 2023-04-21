@@ -65,7 +65,7 @@ class AdventureGamersSeekerBot(BaseSeekerBot):
 
     def search(self, query, max_results=None):
         params = [
-            ( 'keywords', query.replace(' ', '+') ),
+            ( 'keywords', query ),
         ]
         response = requests.post('https://adventuregamers.com/games/search', params=params, headers=self.headers)
         if not response:

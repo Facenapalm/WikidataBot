@@ -42,8 +42,10 @@ class HLTBSeekerBot(BaseSeekerBot):
             should_set_properties=False,
         )
 
+    def preprocess_query(self, query):
+        return re.sub(" [–—] ", " ", query)
+
     def search(self, query, max_results=5):
-        query = re.sub(" [–—] ", " ", query)
         search_results = HowLongToBeat(0.5).search(query)
         if search_results is None:
             return []

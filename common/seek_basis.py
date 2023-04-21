@@ -116,8 +116,22 @@ class BaseSeekerBot:
             if not self.should_set_properties:
                 return
 
+            if self.database_prop in properties:
+                crosslinks = properties[self.database_prop]
+                if not isinstance(crosslinks, list):
+                    crosslinks = [crosslinks]
+                for crosslink in crosslinks:
+                    if crosslink == entry_id:
+                        continue
+                    claim = pywikibot.Claim(self.repo, self.database_prop)
+                    claim.setTarget(crosslink)
+                    item.addClaim(claim, summary=f"Add {self.database_prop_label} (cross-linked with `{entry_id}`)")
+                    print(f"{item.title()}: {self.database_prop_label} set to `{crosslink}` (cross-linked with `{entry_id}`)")
+
             for key, value in properties.items():
                 if key == self.matching_prop:
+                    continue
+                if key == self.database_prop:
                     continue
                 key_verbose = self.get_verbose_name(key)
                 if key in item.claims:
@@ -232,7 +246,7 @@ class BaseSeekerBot:
         processed_candidates = set()
 
         query = self.preprocess_query(item.labels[lang])
-        for candidate in self.search(query, max_results=5):
+        for candidate in self.search(query):
             properties = self.parse_entry(candidate)
             if self.matching_prop in properties:
                 if properties[self.matching_prop] == matching_value:

@@ -13,6 +13,7 @@ python seek_moddb_id.py temp.txt
 python seek_riotpixels_id.py temp.txt
 python seek_stopgame_id.py temp.txt
 python seek_tuxdb_id.py temp.txt
+python seek_uvl_id.py temp.txt
 
 python seek_indiedb_id.py temp.txt
 python qualify_igdb.py temp.txt

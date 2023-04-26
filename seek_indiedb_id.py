@@ -39,12 +39,12 @@ class IndieDBSeekerBot(BaseSeekerBot):
     def check_slug(self, slug):
         if slug is None:
             return False
-        response = requests.get("https://www.indiedb.com/games/{}".format(slug), headers=self.headers)
+        response = requests.get(f"https://www.indiedb.com/games/{slug}", headers=self.headers)
         time.sleep(2)
         if response:
             return "NOT available on Indie DB" not in response.text
         else:
-            print("WARNING: failed to get `{}`".format(slug))
+            print(f"WARNING: failed to get `{slug}`")
             return False
 
     def __init__(self):
@@ -76,11 +76,11 @@ class IndieDBSeekerBot(BaseSeekerBot):
             for moddb_claim in item.claims[self.matching_prop]:
                 slug = moddb_claim.getTarget()
                 if not self.check_slug(slug):
-                    raise RuntimeError("`{}` not found in Indie DB".format(slug))
+                    raise RuntimeError(f"`{slug}` not found in Indie DB")
                 claim = pywikibot.Claim(self.repo, self.database_prop)
                 claim.setTarget(slug)
                 item.addClaim(claim, summary="Add Indie DB game ID based on Mod DB game ID")
-                print("{}: added Indie DB game ID `{}`".format(item.title(), slug))
+                print(f"{item.title()}: added Indie DB game ID `{slug}`")
         except RuntimeError as error:
             print(f"{item.title()}: {error}")
 

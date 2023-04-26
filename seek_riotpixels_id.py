@@ -76,11 +76,11 @@ class RiotPixelsSeekerBot(BaseSeekerBot):
         return html
 
     def search(self, query, max_results=20):
-        html = self.__get_html("https://ru.riotpixels.com/search/{}".format(quote(query)))
+        html = self.__get_html(f"https://ru.riotpixels.com/search/{quote(query)}")
         return re.findall(r"\"id\": \"games-([a-z0-9\-]+)\"", html)[:max_results]
 
     def parse_entry(self, entry_id):
-        html = self.__get_html("https://ru.riotpixels.com/games/{}/".format(entry_id))
+        html = self.__get_html(f"https://ru.riotpixels.com/games/{entry_id}/")
         result = {}
         for id_data in IDS_DATA:
             match = re.search(id_data["regex"], html)

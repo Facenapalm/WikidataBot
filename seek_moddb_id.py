@@ -199,13 +199,13 @@ class ModDBSeekerBot(BaseSeekerBot):
         if response:
             return re.findall(r'href="/games/([^"]+)"', response.text)
         else:
-            raise RuntimeError("can't get search results for query `{}`. Status code: {}".format(query, response.status_code))
+            raise RuntimeError(f"can't get search results for query `{query}`. Status code: {response.status_code}")
 
     def parse_entry(self, entry_id, quiet=False):
-        response = requests.get("https://www.moddb.com/games/{}".format(entry_id), headers=self.headers)
+        response = requests.get(f"https://www.moddb.com/games/{entry_id}", headers=self.headers)
         time.sleep(2)
         if not response:
-            print("WARNING: can't get info for game `{}`".format(entry_id))
+            print(f"WARNING: can't get info for game `{entry_id}`")
             return {}
         html = response.text
         result = {}
@@ -221,7 +221,7 @@ class ModDBSeekerBot(BaseSeekerBot):
             if match:
                 result["P2725"] = match.group(1)
         else:
-            print("WARNING: can't get price table for game `{}`".format(entry_id))
+            print(f"WARNING: can't get price table for game `{entry_id}`")
 
         match = re.search(r'<h5>Engine</h5>\s*<span class="summary">\s*<a href="/engines/([a-z0-9\-]+)">([^<]+)</a>\s*</span>\s*</div>', html)
         if match:
@@ -230,9 +230,9 @@ class ModDBSeekerBot(BaseSeekerBot):
                 if self.engines_map[engine_slug] is not None:
                     result[self.engine_prop] = self.engines_map[engine_slug]
             else:
-                print("WARNING: unknown engine `{}` for game `{}`".format(engine_slug, entry_id))
+                print(f"WARNING: unknown engine `{engine_slug}` for game `{entry_id}`")
         else:
-            print("WARNING: can't get engine for game `{}`".format(entry_id))
+            print(f"WARNING: can't get engine for game `{entry_id}`")
 
         return result
 

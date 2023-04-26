@@ -32,6 +32,10 @@ import pywikibot
 from common.seek_basis import BaseSeekerBot
 
 class CoOptimusSeekerBot(BaseSeekerBot):
+    headers = {
+        "User-Agent": "Wikidata connecting bot",
+    }
+
     def __init__(self):
         super().__init__(
             database_item="Q88198967",
@@ -85,7 +89,7 @@ class CoOptimusSeekerBot(BaseSeekerBot):
         if platform_id in self.platform_map:
             return self.platform_map[platform_id]
         else:
-            print("WARNING: unknown platform `{}`".format(platform_id))
+            print(f"WARNING: unknown platform `{platform_id}`")
             return None
 
     def set_cooptimus_id(self, item, entry_id, platform_id, summary):
@@ -99,7 +103,7 @@ class CoOptimusSeekerBot(BaseSeekerBot):
             claim.addQualifier(qualifier)
 
         item.addClaim(claim, summary=summary)
-        print("{}: {} set to `{}` ({})".format(item.title(), self.database_prop_label, entry_id, platform_id))
+        print(f"{item.title()}: {self.database_prop_label} set to `{entry_id}` ({platform_id})")
 
     # implement abstract methods
 
@@ -110,7 +114,7 @@ class CoOptimusSeekerBot(BaseSeekerBot):
             ( "system", "4" ),
             ( "page", "1" )
         ]
-        response = requests.get('https://www.co-optimus.com/ajax/ajax_games.php', params=params)
+        response = requests.get('https://www.co-optimus.com/ajax/ajax_games.php', params=params, headers=self.headers)
         if response:
             result = re.findall(r'<tr class="result_row" id="(\d+)"', response.text)
             if max_results:
@@ -118,19 +122,19 @@ class CoOptimusSeekerBot(BaseSeekerBot):
             else:
                 return result
         else:
-            print("WARNING: can't get search results for query `{}`".format(query))
+            print(f"WARNING: can't get search results for query `{query}`")
             return []
 
     def parse_entry(self, entry_id):
-        response = requests.get("https://www.co-optimus.com/game/{}/platform/game.html".format(entry_id))
+        response = requests.get(f"https://www.co-optimus.com/game/{entry_id}/platform/game.html", headers=self.headers)
         result = None
         try:
             if not response:
-                raise RuntimeError("can't get info".format(entry_id))
+                raise RuntimeError(f"can't get info for entry `{entry_id}`")
             html = response.text
             match = re.search(r'<a class="button" target="_new" href="https?://store\.steampowered\.com/app/(\d+)/[^"]*"', html)
             if not match:
-                raise RuntimeError("no Steam application ID found".format(entry_id))
+                raise RuntimeError(f"no Steam application ID found for entry `{entry_id}`")
             result = match.group(1)
 
             # Steam ID found, now let's parse crosslinks for later
@@ -143,7 +147,7 @@ class CoOptimusSeekerBot(BaseSeekerBot):
                 raise RuntimeError("no game systems list found")
             self.cached_crosslinks = re.findall(r'href="https?://www\.co-optimus\.com/game/(\d+)/([^/"]+)/', match.group(0))
         except RuntimeError as error:
-            print("WARNING: {} for entry `{}`".format(error, entry_id))
+            print(f"WARNING: {error} for entry `{entry_id}`")
         if result is None:
             return {}
         else:
@@ -154,9 +158,9 @@ class CoOptimusSeekerBot(BaseSeekerBot):
     def process_item(self, item):
         try:
             if item.isRedirectPage():
-                raise RuntimeError("{} is a redirect page".format(item.title()))
+                raise RuntimeError(f"{item.title()} is a redirect page")
             if self.database_prop in item.claims:
-                raise RuntimeError("{} already set".format(self.database_prop_label))
+                raise RuntimeError(f"{self.database_prop_label} already set")
 
             game_is_coop = False
             if "P404" in item.claims:
@@ -169,21 +173,21 @@ class CoOptimusSeekerBot(BaseSeekerBot):
                         game_is_coop = True
                         break
             if not game_is_coop:
-                raise RuntimeError("{} is not a multiplayer or co-op game".format(item.title()))
+                raise RuntimeError(f"{item.title()} is not a multiplayer or co-op game")
 
             entry_id, properties = self.seek_database_entry(item)
 
             if self.cached_entry != entry_id:
                 raise RuntimeError("Internal error: cached_entry doesn't match entry_id")
 
-            self.set_cooptimus_id(item, entry_id, "pc", "Add {} for PC based on matching {}".format(self.database_prop_label, self.matching_prop_label))
+            self.set_cooptimus_id(item, entry_id, "pc", f"Add {self.database_prop_label} for PC based on matching {self.matching_prop_label}")
 
             for crosslink, platform in self.cached_crosslinks:
                 if crosslink == entry_id:
                     continue
-                self.set_cooptimus_id(item, crosslink, platform, "Add {} for platform `{}` (crosslinked with `{}`)".format(self.database_prop_label, platform, entry_id))
+                self.set_cooptimus_id(item, crosslink, platform, f"Add {self.database_prop_label} for platform `{platform}` (crosslinked with `{entry_id}`)")
         except RuntimeError as error:
-            print("{}: {}".format(item.title(), error))
+            print(f"{item.title()}: {error}")
 
 if __name__ == "__main__":
     CoOptimusSeekerBot().run()

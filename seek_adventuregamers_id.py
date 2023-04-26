@@ -78,7 +78,7 @@ class AdventureGamersSeekerBot(BaseSeekerBot):
             return result
 
     def parse_entry(self, entry_id):
-        response = requests.get('https://adventuregamers.com/games/view/{}'.format(entry_id), headers=self.headers)
+        response = requests.get(f'https://adventuregamers.com/games/view/{entry_id}', headers=self.headers)
         if not response:
             raise RuntimeError(f'Video game `{entry_id}` returned {response.status_code}: {response.reason}')
         html = response.text

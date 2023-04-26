@@ -114,7 +114,7 @@ class LutrisSeekerBot(BaseSeekerBot):
             return results
 
     def parse_entry(self, entry_id):
-        html = self.__get_html("https://lutris.net/games/{}".format(entry_id))
+        html = self.__get_html(f"https://lutris.net/games/{entry_id}")
         result = {}
         for link in re.findall(r"<a [^>]*class=[\"']external-link[\"'].*?</a>", html, flags=re.DOTALL):
             href = re.search(r"href=[\"'](.*?)[\"']", link).group(1)
@@ -128,7 +128,7 @@ class LutrisSeekerBot(BaseSeekerBot):
                     else:
                         result[data["property"]] = match.group(1)
                 else:
-                    print("WARNING: {} found, but `{}` doesn't match a mask".format(data["property"], href))
+                    print(f"WARNING: {data['property']} found, but `{href}` doesn't match a mask")
         return result
 
 if __name__ == "__main__":

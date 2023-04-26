@@ -17,5 +17,6 @@ python seek_uvl_id.py temp.txt
 
 python seek_indiedb_id.py temp.txt
 python qualify_igdb.py temp.txt
+python qualify_uvl.py temp.txt
 
 del temp.txt

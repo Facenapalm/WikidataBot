@@ -93,6 +93,10 @@ STORES_DATA = {
 REVERSE_MATCHING = { entry["property"]: key for key, entry in STORES_DATA.items() }
 
 class RawgSeekerBot(BaseSeekerBot):
+    headers = {
+        "User-Agent": "Wikidata connecting bot",
+    }
+
     def __init__(self):
         super().__init__(
             database_item="Q108357933",
@@ -115,12 +119,11 @@ class RawgSeekerBot(BaseSeekerBot):
             ( "page", 1 ),
             ( "stores", REVERSE_MATCHING[self.matching_prop] ),
         ]
-        response = requests.get('https://api.rawg.io/api/games', params=params)
+        response = requests.get("https://api.rawg.io/api/games", params=params, headers=self.headers)
         return [result["slug"] for result in response.json()["results"]]
 
     def parse_entry(self, entry_id):
-        url = f"https://api.rawg.io/api/games/{entry_id}/stores?key={self.api_key}"
-        response = requests.get(url)
+        response = requests.get(f"https://api.rawg.io/api/games/{entry_id}/stores?key={self.api_key}", headers=self.headers)
         json = response.json()
 
         result = {}

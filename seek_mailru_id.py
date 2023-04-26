@@ -31,6 +31,10 @@ import re
 from common.seek_basis import BaseSeekerBot
 
 class MailRuSeekerBot(BaseSeekerBot):
+    headers = {
+        "User-Agent": "Wikidata connecting bot",
+    }
+
     def __init__(self):
         super().__init__(
             database_item="Q4197758",
@@ -45,7 +49,7 @@ class MailRuSeekerBot(BaseSeekerBot):
         params = [
             ( "query", query ),
         ]
-        response = requests.get('https://api.games.mail.ru/pc/search_suggest/', params=params)
+        response = requests.get('https://api.games.mail.ru/pc/search_suggest/', params=params, headers=self.headers)
         if response:
             result = [item["slug"] for item in response.json()["game"]["items"]]
             if max_results:
@@ -53,12 +57,12 @@ class MailRuSeekerBot(BaseSeekerBot):
             else:
                 return result
         else:
-            print("WARNING: can't get search results for query `{}`".format(query))
+            print(f"WARNING: can't get search results for query `{query}`")
             return []
 
     def parse_entry(self, entry_id):
         result = ""
-        response = requests.get("https://api.games.mail.ru/pc/v2/game/{}/".format(entry_id))
+        response = requests.get(f"https://api.games.mail.ru/pc/v2/game/{entry_id}/", headers=self.headers)
         try:
             if not response:
                 raise RuntimeError("can't get info")
@@ -70,7 +74,7 @@ class MailRuSeekerBot(BaseSeekerBot):
                     raise RuntimeError("several steam links found")
                 result = match.group(1)
         except RuntimeError as error:
-            print("WARNING: {} for game `{}`".format(error, entry_id))
+            print(f"WARNING: {error} for game `{entry_id}`")
             return {}
         return { "P1733": result }
 

@@ -29,12 +29,21 @@ See also:
 """
 
 import re
-import urllib.request
+import requests
 import pywikibot
 from pywikibot.data.sparql import SparqlQuery
 from common.qualify_basis import QualifyingBot
 
 class TGDBQualifyingBot(QualifyingBot):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
+        "Accept-Encoding": "none",
+        "Accept-Language": "en-US,en;q=0.8",
+        "Connection": "keep-alive"
+    }
+
     def __init__(self):
         super().__init__(
             base_property="P7622",
@@ -52,18 +61,13 @@ class TGDBQualifyingBot(QualifyingBot):
         self.platform_map = { entry["tgdb"]: get_item(entry["item"]) for entry in result }
 
     def get_qualifier_values(self, base_value):
-        headers = {
-            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
-            "Accept-Encoding": "none",
-            "Accept-Language": "en-US,en;q=0.8",
-            "Connection": "keep-alive"
-        }
-        url = "https://thegamesdb.net/game.php?id={}".format(base_value)
-        request = urllib.request.Request(url, None, headers)
-        response = urllib.request.urlopen(request)
-        html = response.read().decode("utf-8")
+        params = [
+            ( 'id', base_value )
+        ]
+        response = requests.get('https://thegamesdb.net/game.php', params=params, headers=self.headers)
+        if not response:
+            return []
+        html = response.text
 
         match = re.search(r'<p>Platform: <a href="/platform\.php\?id=(\d+)">(.*?)</a></p>', html)
         if not match:

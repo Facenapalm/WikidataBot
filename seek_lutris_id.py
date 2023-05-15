@@ -28,11 +28,10 @@ To get started, type:
     python seek_lutris_id.py -h
 """
 
-import urllib.parse
-import urllib.request
-import time
-import random
 import re
+import time
+import requests
+from urllib.parse import unquote
 from common.seek_basis import BaseSeekerBot
 
 IDS_DATA = {
@@ -65,6 +64,10 @@ IDS_DATA = {
 }
 
 class LutrisSeekerBot(BaseSeekerBot):
+    headers = {
+        "User-Agent": "Wikidata connecting bot",
+    }
+
     def __init__(self):
         super().__init__(
             database_item="Q75129027",
@@ -73,50 +76,30 @@ class LutrisSeekerBot(BaseSeekerBot):
             matching_prop_whitelist=[entry["property"] for entry in IDS_DATA.values()],
         )
 
-    def __get_html(self, url, attempts=3):
-        attempts = 3
-        headers = {
-            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
-            "Accept-Encoding": "none",
-            "Accept-Language": "en-US,en;q=0.8",
-            "Connection": "keep-alive"
-        }
-        for attempt_no in range(attempts):
-            try:
-                time.sleep(random.randint(1, 3))
-                request = urllib.request.Request(url, None, headers)
-                response = urllib.request.urlopen(request)
-                html = response.read().decode("utf-8")
-            except urllib.error.HTTPError as error:
-                if error.code == 404:
-                    html = ""
-                else:
-                    raise error
-            except Exception as error:
-                if attempt_no == (attempts - 1):
-                    raise error
-                else:
-                    time.sleep(random.randint(2, 3))
-        return html
-
     def search(self, query, max_results=None):
         params = {
             "q": query,
             "unpublished-filter": "on"
         }
-        html = self.__get_html("https://lutris.net/games?" + urllib.parse.urlencode(params))
-        results = re.findall(r"<div class=[\"']game-preview[\"']>\s+<a href=[\"']/games/([^\"']+)/\"", html)
+        response = requests.get("https://lutris.net/games", params=params, headers=self.headers)
+        time.sleep(1)
+        if not response:
+            raise RuntimeError(f"can't get search results for query `{query}`. Status code: {response.status_code}")
+
+        results = re.findall(r"<div class=[\"']game-preview[\"']>\s+<a href=[\"']/games/([^\"']+)/\"", response.text)
         if max_results:
             return results[:max_results]
         else:
             return results
 
     def parse_entry(self, entry_id):
-        html = self.__get_html(f"https://lutris.net/games/{entry_id}")
+        response = requests.get(f"https://lutris.net/games/{entry_id}", headers=self.headers)
+        time.sleep(1)
+        if not response:
+            raise RuntimeError(f"can't get info ({response.status_code})")
+
         result = {}
-        for link in re.findall(r"<a [^>]*class=[\"']external-link[\"'].*?</a>", html, flags=re.DOTALL):
+        for link in re.findall(r"<a [^>]*class=[\"']external-link[\"'].*?</a>", response.text, flags=re.DOTALL):
             href = re.search(r"href=[\"'](.*?)[\"']", link).group(1)
             span = re.search(r"<span>(.*?)</span>", link).group(1).lower()
             if span in IDS_DATA:
@@ -124,7 +107,7 @@ class LutrisSeekerBot(BaseSeekerBot):
                 match = re.match(data["mask"], href)
                 if match:
                     if data["urldecode"]:
-                        result[data["property"]] = urllib.parse.unquote(match.group(1))
+                        result[data["property"]] = unquote(match.group(1))
                     else:
                         result[data["property"]] = match.group(1)
                 else:

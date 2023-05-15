@@ -130,11 +130,11 @@ class CoOptimusSeekerBot(BaseSeekerBot):
         result = None
         try:
             if not response:
-                raise RuntimeError(f"can't get info for entry `{entry_id}`")
+                raise RuntimeError(f"can't get info")
             html = response.text
             match = re.search(r'<a class="button" target="_new" href="https?://store\.steampowered\.com/app/(\d+)/[^"]*"', html)
             if not match:
-                raise RuntimeError(f"no Steam application ID found for entry `{entry_id}`")
+                raise RuntimeError(f"no Steam application ID found")
             result = match.group(1)
 
             # Steam ID found, now let's parse crosslinks for later

@@ -28,8 +28,8 @@ To get started, type:
 """
 
 import re
-import urllib.request
-from urllib.parse import quote
+import requests
+from requests.adapters import HTTPAdapter
 from common.seek_basis import BaseSeekerBot
 
 IDS_DATA = [
@@ -48,6 +48,10 @@ IDS_DATA = [
 ]
 
 class RiotPixelsSeekerBot(BaseSeekerBot):
+    headers = {
+        "User-Agent": "Wikidata connecting bot",
+    }
+
     def __init__(self):
         super().__init__(
             database_item="Q19612893",
@@ -56,36 +60,28 @@ class RiotPixelsSeekerBot(BaseSeekerBot):
             matching_prop_whitelist=[entry["property"] for entry in IDS_DATA],
         )
 
-    def __get_html(self, url, attempts=10):
-        headers = {
-            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
-            "Accept-Encoding": "none",
-            "Accept-Language": "en-US,en;q=0.8",
-            "Connection": "keep-alive"
-        }
-        for attempt_no in range(attempts):
-            try:
-                request = urllib.request.Request(url, None, headers)
-                response = urllib.request.urlopen(request, timeout=20)
-                html = response.read().decode("utf-8")
-            except Exception as error:
-                if attempt_no == (attempts - 1):
-                    raise error
-        return html
+        self.session = requests.Session()
+        self.session.mount('https://ru.riotpixels.com', HTTPAdapter(max_retries=10))
 
     def search(self, query, max_results=20):
-        html = self.__get_html(f"https://ru.riotpixels.com/search/{quote(query)}")
-        return re.findall(r"\"id\": \"games-([a-z0-9\-]+)\"", html)[:max_results]
+        response = self.session.get(f"https://ru.riotpixels.com/search/{query}", headers=self.headers, timeout=20)
+        if response:
+            return re.findall(r"\"id\": \"games-([a-z0-9\-]+)\"", response.text)[:max_results]
+        else:
+            raise RuntimeError(f"can't get search results for query `{query}`. Status code: {response.status_code}")
 
     def parse_entry(self, entry_id):
-        html = self.__get_html(f"https://ru.riotpixels.com/games/{entry_id}/")
+        response = self.session.get(f"https://ru.riotpixels.com/games/{entry_id}/", headers=self.headers, timeout=20)
+        if not response:
+            raise RuntimeError(f"can't get info ({response.status_code})")
+        html = response.text
         result = {}
+
         for id_data in IDS_DATA:
             match = re.search(id_data["regex"], html)
             if match:
                 result[id_data["property"]] = match.group(1)
+
         return result
 
 if __name__ == "__main__":

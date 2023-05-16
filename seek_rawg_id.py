@@ -40,53 +40,54 @@ STORES_DATA = {
     1: {
         "title": "Steam",
         "property": "P1733",
-        "regex": r"^https?:\/\/(?:store\.)?steam(?:community|powered)\.com\/app\/(\d+)"
+        "regex": r"^https?:\/\/(?:store\.)?steam(?:community|powered)\.com\/app\/(\d+)",
     },
     2: {
         "title": "Microsoft Store",
         "property": "P5885",
         "regex": r"^https?:\/\/www\.microsoft\.com\/(?:[-a-z]+\/)?(?:store\/)?p\/[^\/]+\/([a-zA-Z0-9]{12})",
-        "normalize": lambda x: x.lower()
+        "normalize": lambda x: x.lower(),
     },
     3: {
         "title": "PlayStation Store",
         "property": "P5944",
-        "regex": r"^https?:\/\/store\.playstation\.com/[-a-z]+\/product\/(UP\d{4}-[A-Z]{4}\d{5}_00-[\dA-Z_]{16})"
+        "regex": r"^https?:\/\/store\.playstation\.com/[-a-z]+\/product\/(UP\d{4}-[A-Z]{4}\d{5}_00-[\dA-Z_]{16})",
     },
     4: {
         "title": "App Store",
         "property": "P3861",
-        "regex": r"^https?:\/\/(?:apps|itunes)\.apple\.com\/(?:[^\/]+\/)?app\/(?:[^\/]+\/)?id([1-9][0-9]*)"
+        "regex": r"^https?:\/\/(?:apps|itunes)\.apple\.com\/(?:[^\/]+\/)?app\/(?:[^\/]+\/)?id([1-9][0-9]*)",
     },
     5: {
         "title": "GOG",
         "property": "P2725",
-        "regex": r"^https?:\/\/www\.gog\.com\/(?:\w{2}\/)?((?:movie\/|game\/)[a-z0-9_]+)"
+        "regex": r"^https?:\/\/www\.gog\.com\/(?:\w{2}\/)?((?:movie\/|game\/)[a-z0-9_]+)",
     },
     6: {
         "title": "Nintendo eShop",
         "property": "P8084",
-        "regex": r"^https?:\/\/www\.nintendo\.com\/(?:store\/products|games\/detail)\/([-a-z0-9]+-(?:switch|wii-u|3ds))"
+        "regex": r"^https?:\/\/www\.nintendo\.com\/(?:store\/products|games\/detail)\/([-a-z0-9]+-(?:switch|wii-u|3ds))",
     },
-    # 7: {
-    #     "title": "Xbox 360 Store",
-    #     "property": "",
-    #     "regex": r""
-    # },
+    7: {
+        "title": "Xbox 360 Store",
+        "property": "P11789",
+        "regex": r"^https://marketplace\.xbox\.com/(?:en-US/)?Product/(?:[^/]+/)?([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12})",
+        "normalize": lambda x: x.lower(),
+    },
     8: {
         "title": "Google Play",
         "property": "P3418",
-        "regex": r"^https?:\/\/play\.google\.com\/store\/apps\/details\?(?:hl=.+&)?id=([a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+)+)"
+        "regex": r"^https?:\/\/play\.google\.com\/store\/apps\/details\?(?:hl=.+&)?id=([a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+)+)",
     },
     9: {
         "title": "itch.io",
         "property": "P7294",
-        "regex": r"^(https?:\/\/[a-zA-Z0-9\-\_]+\.itch\.io\/[a-zA-Z0-9\-\_]+)"
+        "regex": r"^(https?:\/\/[a-zA-Z0-9\-\_]+\.itch\.io\/[a-zA-Z0-9\-\_]+)",
     },
     11: {
         "title": "Epic Games Store",
         "property": "P6278",
-        "regex": r"^https?:\/\/(?:www\.)?(?:store\.)?epicgames\.com\/(?:store\/)?(?:(?:ar|de|en-US|es-ES|es-MX|fr|it|ja|ko|pl|pt-BR|ru|th|tr|zh-CN|zh-Hant)\/)?p(?:roduct)?\/([a-z\d]+(?:[\-]{0,3}[\_]?[^\sA-Z\W\_]+)*)"
+        "regex": r"^https?:\/\/(?:www\.)?(?:store\.)?epicgames\.com\/(?:store\/)?(?:(?:ar|de|en-US|es-ES|es-MX|fr|it|ja|ko|pl|pt-BR|ru|th|tr|zh-CN|zh-Hant)\/)?p(?:roduct)?\/([a-z\d]+(?:[\-]{0,3}[\_]?[^\sA-Z\W\_]+)*)",
     },
 }
 

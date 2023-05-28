@@ -35,7 +35,6 @@ from common.seek_basis import BaseSeekerBot
 class ModDBSeekerBot(BaseSeekerBot):
     def __init__(self):
         super().__init__(
-            database_item="Q2983178",
             database_prop="P6774",
             default_matching_prop="P1733",
             matching_prop_whitelist=["P1733", "P2725"],

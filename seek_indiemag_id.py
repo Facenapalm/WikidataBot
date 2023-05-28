@@ -34,7 +34,6 @@ from common.seek_basis import BaseSeekerBot
 class IndieMagSeekerBot(BaseSeekerBot):
     def __init__(self):
         super().__init__(
-            database_item="Q108267444",
             database_prop="P9870",
             default_matching_prop="P1733",
             matching_prop_whitelist=["P1733", "P2725"],

@@ -37,7 +37,6 @@ class MailRuSeekerBot(BaseSeekerBot):
 
     def __init__(self):
         super().__init__(
-            database_item="Q4197758",
             database_prop="P9697",
             default_matching_prop="P1733",
             matching_prop_whitelist=["P1733"],

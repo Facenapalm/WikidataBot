@@ -33,7 +33,6 @@ from common.seek_basis import BaseSeekerBot
 class StopGameSeekerBot(BaseSeekerBot):
     def __init__(self):
         super().__init__(
-            database_item="Q72406450",
             database_prop="P10030",
             default_matching_prop="P1733",
             matching_prop_whitelist=["P1733"],

@@ -54,7 +54,6 @@ class RiotPixelsSeekerBot(BaseSeekerBot):
 
     def __init__(self):
         super().__init__(
-            database_item="Q19612893",
             database_prop="P10393",
             default_matching_prop="P1733",
             matching_prop_whitelist=[entry["property"] for entry in IDS_DATA],

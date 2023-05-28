@@ -50,12 +50,10 @@ class BaseSeekerBot:
     databases.
     """
 
-    def __init__(self, database_item, database_prop, default_matching_prop,
+    def __init__(self, database_prop, default_matching_prop,
                  matching_prop_whitelist=None, additional_query_lines=[],
                  should_check_aliases=True, should_set_properties=True):
         """
-        database_item - Wikidata item ID (Qnnn) that describes this database to
-            use in "stated in" references.
         database_prop - Wikidata property (Pnnn) that links to the database.
         default_matching_prop - Wikidata property to use as a matching property
             by default.
@@ -71,11 +69,10 @@ class BaseSeekerBot:
         """
         self.repo = pywikibot.Site()
         self.repo.login()
+        self.property_info_cache = {}
 
-        self.verbose_names_cache = {}
-        self.database_item = pywikibot.ItemPage(self.repo, database_item)
         self.database_prop = database_prop
-        self.database_prop_label = self.get_verbose_name(database_prop)
+        (self.database_prop_label, self.database_item) = self.get_property_info(database_prop)
 
         self.additional_query_lines = "\n".join(additional_query_lines)
 
@@ -92,7 +89,7 @@ class BaseSeekerBot:
                 raise RuntimeError(f"Unsupported matching property `{matching_prop}`")
 
         self.matching_prop = matching_prop
-        self.matching_prop_label = self.get_verbose_name(matching_prop)
+        (self.matching_prop_label, self.matching_item) = self.get_property_info(matching_prop)
 
     def process_item(self, item):
         """
@@ -110,6 +107,7 @@ class BaseSeekerBot:
 
             claim = pywikibot.Claim(self.repo, self.database_prop)
             claim.setTarget(entry_id)
+            claim.addSources(self.generate_matched_by_source())
             item.addClaim(claim, summary=f"Add {self.database_prop_label} based on matching {self.matching_prop_label}")
             print(f"{item.title()}: {self.database_prop_label} set to `{entry_id}`")
 
@@ -133,13 +131,13 @@ class BaseSeekerBot:
                     continue
                 if key == self.database_prop:
                     continue
-                key_verbose = self.get_verbose_name(key)
+                key_verbose, _ = self.get_property_info(key)
                 if key in item.claims:
                     print(f"{item.title()}: {key_verbose} already set")
                     continue
                 claim = pywikibot.Claim(self.repo, key)
                 claim.setTarget(value)
-                claim.addSources(self.generate_source(entry_id))
+                claim.addSources(self.generate_stated_in_source(entry_id))
                 item.addClaim(claim, summary=f"Add {key_verbose} based on {self.database_prop_label}")
                 print(f"{item.title()}: {key_verbose} set to `{value}`")
 
@@ -201,21 +199,41 @@ class BaseSeekerBot:
 
     # Private methods.
 
-    def get_verbose_name(self, prop):
+    def get_property_info(self, prop):
+        """
+        Return tuple ( property_label, stated_in_value ).
+        For instance, for "P1733" it would return ( "Steam application ID", ItemPage("Q337535") ).
+        """
         """Return property's label (for instance, "Steam application ID" for P1733)."""
-        if prop in self.verbose_names_cache:
-            return self.verbose_names_cache[prop]
+        if prop in self.property_info_cache:
+            return self.property_info_cache[prop]
 
         prop_page = pywikibot.PropertyPage(self.repo, prop)
+
+        if "P9073" not in prop_page.claims:
+            raise RuntimeError(f"applicable 'stated in' value not set for {prop}")
+        stated_in_value = prop_page.claims["P9073"][0].getTarget()
+
         if "en" in prop_page.labels:
-            verbose_name = prop_page.labels["en"]
+            property_label = prop_page.labels["en"]
         else:
-            verbose_name = prop
+            property_label = prop
 
-        self.verbose_names_cache[prop] = verbose_name
-        return verbose_name
+        result = (property_label, stated_in_value)
+        self.property_info_cache[prop] = result
+        return result
 
-    def generate_source(self, database_id):
+    def generate_matched_by_source(self):
+        """Create a Wikidata "matched by identifier from" source."""
+        matchedby = pywikibot.Claim(self.repo, "P11797")
+        matchedby.setTarget(self.matching_item)
+        databaselink = pywikibot.Claim(self.repo, self.matching_prop)
+        databaselink.setTarget(self.matching_value)
+        retrieved = pywikibot.Claim(self.repo, "P813")
+        retrieved.setTarget(get_current_wbtime())
+        return [matchedby, databaselink, retrieved]
+
+    def generate_stated_in_source(self, database_id):
         """Create a Wikidata "stated in" source linking to this database page."""
         statedin = pywikibot.Claim(self.repo, "P248")
         statedin.setTarget(self.database_item)
@@ -235,7 +253,7 @@ class BaseSeekerBot:
             raise RuntimeError(f"{self.matching_prop_label} not found in the item")
         if len(item.claims[self.matching_prop]) > 1:
             raise RuntimeError(f"several {self.matching_prop_label}s found")
-        matching_value = item.claims[self.matching_prop][0].getTarget()
+        self.matching_value = item.claims[self.matching_prop][0].getTarget()
 
         if "en" in item.labels:
             lang = "en"
@@ -249,7 +267,7 @@ class BaseSeekerBot:
         for candidate in self.search(query):
             properties = self.parse_entry(candidate)
             if self.matching_prop in properties:
-                if properties[self.matching_prop] == matching_value:
+                if properties[self.matching_prop] == self.matching_value:
                     return (candidate, properties)
             processed_candidates.add(candidate)
 
@@ -265,7 +283,7 @@ class BaseSeekerBot:
                         continue
                     properties = self.parse_entry(candidate)
                     if self.matching_prop in properties:
-                        if properties[self.matching_prop] == matching_value:
+                        if properties[self.matching_prop] == self.matching_value:
                             return (candidate, properties)
                     processed_candidates.add(candidate)
                 processed_queries.add(query)

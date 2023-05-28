@@ -49,7 +49,6 @@ class IndieDBSeekerBot(BaseSeekerBot):
 
     def __init__(self):
         super().__init__(
-            database_item="Q60188888",
             database_prop="P6717",
             default_matching_prop="P6774",
             matching_prop_whitelist=["P6774"],

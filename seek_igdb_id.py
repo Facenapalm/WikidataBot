@@ -56,7 +56,6 @@ class IGDBSeekerBot(BaseSeekerBot):
 
     def __init__(self):
         super().__init__(
-            database_item="Q20056333",
             database_prop="P5794",
             default_matching_prop="P1733",
             matching_prop_whitelist=["P1733", "P2725", "P6278"],
@@ -71,16 +70,16 @@ class IGDBSeekerBot(BaseSeekerBot):
             raise RuntimeError(f"{self.matching_prop_label} not found in the item")
         if len(item.claims[self.matching_prop]) > 1:
             raise RuntimeError(f"several {self.matching_prop_label}s found")
-        matching_value = item.claims[self.matching_prop][0].getTarget()
+        self.matching_value = item.claims[self.matching_prop][0].getTarget()
 
         result = []
         for endpoint, query in self.queries[self.matching_prop]:
-            result += self.wrapper.request(endpoint, query.format(matching_value))
+            result += self.wrapper.request(endpoint, query.format(self.matching_value))
 
         if len(result) == 0:
-            raise RuntimeError(f"no IGDB entries are linked to {self.matching_prop_label} `{matching_value}`")
+            raise RuntimeError(f"no IGDB entries are linked to {self.matching_prop_label} `{self.matching_value}`")
         if len(result) > 1:
-            raise RuntimeError(f"several IGDB entries are linked to {self.matching_prop_label} `{matching_value}`")
+            raise RuntimeError(f"several IGDB entries are linked to {self.matching_prop_label} `{self.matching_value}`")
 
         igdb_id = str(result[0]["game"])
         igdb_slug = self.wrapper.get_slug_by_id(igdb_id)
@@ -101,6 +100,7 @@ class IGDBSeekerBot(BaseSeekerBot):
             qualifier = pywikibot.Claim(self.repo, self.numeric_prop)
             qualifier.setTarget(igdb_id)
             claim.addQualifier(qualifier)
+            claim.addSources(self.generate_matched_by_source())
             item.addClaim(claim, summary=f"Add {self.database_prop_label} based on matching {self.matching_prop_label}")
             print(f"{item.title()}: IGDB ID set to `{igdb_slug}` (numeric id `{igdb_id}`)")
         except RuntimeError as error:

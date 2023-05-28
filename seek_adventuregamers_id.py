@@ -57,7 +57,6 @@ class AdventureGamersSeekerBot(BaseSeekerBot):
 
     def __init__(self):
         super().__init__(
-            database_item='Q506391',
             database_prop='P7005',
             default_matching_prop='P1733',
             matching_prop_whitelist=['P1733', 'P2725', 'P4477', 'P7294'],

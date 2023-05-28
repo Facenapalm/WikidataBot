@@ -38,7 +38,6 @@ class HLTBSeekerBot(BaseSeekerBot):
 
     def __init__(self):
         super().__init__(
-            database_item="Q22222506",
             database_prop="P2816",
             default_matching_prop="P1733",
             matching_prop_whitelist=["P1733"],

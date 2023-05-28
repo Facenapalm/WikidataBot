@@ -34,7 +34,6 @@ from common.seek_basis import BaseSeekerBot
 class TuxDBSeekerBot(BaseSeekerBot):
     def __init__(self):
         super().__init__(
-            database_item="Q115537337",
             database_prop="P11307",
             default_matching_prop="P1733",
             matching_prop_whitelist=["P1733"],

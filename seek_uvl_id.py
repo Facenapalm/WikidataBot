@@ -18,6 +18,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""
+Add UVL game ID (P7555) based on Steam application ID (P1733).
+
+To get started, type:
+
+    python seek_uvl_id.py -h
+"""
+
 import re
 import requests
 from common.seek_basis import BaseSeekerBot
@@ -48,7 +56,7 @@ class UVLSeeker(BaseSeekerBot):
         if not response:
             raise RuntimeError(f'Query `{query}` resulted in {response.status_code}: {response.reason}')
 
-        result = re.findall(r"<td><a href='/game-(\d+)-", response.text)
+        result = re.findall(r'<td><a href="/game-(\d+)-', response.text)
         if max_results:
             return result[:max_results]
         else:
@@ -61,17 +69,17 @@ class UVLSeeker(BaseSeekerBot):
             return {}
         html = response.text
 
-        match = re.search(r"<h2 class='acc_head' id='acc_xrefs'>([\s\S]+?)</div>", html)
+        match = re.search(r'<h2 class="acc_head" id="acc_xrefs">([\s\S]+?)</div>', html)
         if not match:
             # print(f'WARNING: no xref section found for video game `{entry_id}`')
             return {}
         xrefs = match.group(1)
 
         result = {}
-        match = re.search(r"href='https?://store\.steampowered\.com/app/(\d+)[/']", xrefs)
+        match = re.search(r'href="https?://store\.steampowered\.com/app/(\d+)[/"]', xrefs)
         if match:
             result['P1733'] = match.group(1)
-        match = re.search(r"href='https?://www\.gog\.com/(?:en/)?(game/[a-z0-9_]+)[?']", xrefs)
+        match = re.search(r'href="https?://www\.gog\.com/(?:en/)?(game/[a-z0-9_]+)[?"]', xrefs)
         if match:
             result['P2725'] = match.group(1)
 
@@ -83,9 +91,9 @@ class UVLSeeker(BaseSeekerBot):
                 nonlocal crosslinks
                 crosslinks += re.findall(r'/game-(\d+)-', match.group(0))
 
-        parse_crosslinks(r'version of(?:\s*(?:<br />|<a .*?</a>))+')
-        parse_crosslinks(r'ported to(?:\s*(?:<br />|<a .*?</a>))+')
-        parse_crosslinks(r'port of(?:\s*(?:<br />|<a .*?</a>))+')
+        parse_crosslinks(r'version of(?:\s*(?:<br/>|<a .*?</a>))+')
+        parse_crosslinks(r'ported to(?:\s*(?:<br/>|<a .*?</a>))+')
+        parse_crosslinks(r'port of(?:\s*(?:<br/>|<a .*?</a>))+')
 
         if crosslinks:
             result['P7555'] = crosslinks

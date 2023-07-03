@@ -256,7 +256,7 @@ class UVLQualifyingBot(QualifyingBot):
             return []
         html = response.text
 
-        match = re.search(r"<a class='bold platinfo'.*?>(.*?)</a>", html)
+        match = re.search(r'<a class="bold platinfo".*?>(.*?)</a>', html)
         if not match:
             return []
 

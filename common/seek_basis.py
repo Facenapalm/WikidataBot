@@ -20,6 +20,7 @@
 
 """A basis for seek_xxx_id.py scripts."""
 
+import functools
 import pywikibot
 from argparse import ArgumentParser
 from datetime import datetime
@@ -69,10 +70,10 @@ class BaseSeekerBot:
         """
         self.repo = pywikibot.Site()
         self.repo.login()
-        self.property_info_cache = {}
 
         self.database_prop = database_prop
-        (self.database_prop_label, self.database_item) = self.get_property_info(database_prop)
+        self.database_prop_label = self.get_property_label(database_prop)
+        self.database_item = self.get_property_stated_in_value(database_prop)
 
         self.additional_query_lines = "\n".join(additional_query_lines)
 
@@ -89,7 +90,8 @@ class BaseSeekerBot:
                 raise RuntimeError(f"Unsupported matching property `{matching_prop}`")
 
         self.matching_prop = matching_prop
-        (self.matching_prop_label, self.matching_item) = self.get_property_info(matching_prop)
+        self.matching_prop_label = self.get_property_label(matching_prop)
+        self.matching_item = self.get_property_stated_in_value(matching_prop)
 
     def process_item(self, item):
         """
@@ -131,7 +133,7 @@ class BaseSeekerBot:
                     continue
                 if key == self.database_prop:
                     continue
-                key_verbose, _ = self.get_property_info(key)
+                key_verbose = self.get_property_label(key)
                 if key in item.claims:
                     print(f"{item.title()}: {key_verbose} already set")
                     continue
@@ -199,29 +201,24 @@ class BaseSeekerBot:
 
     # Private methods.
 
-    def get_property_info(self, prop):
-        """
-        Return tuple ( property_label, stated_in_value ).
-        For instance, for "P1733" it would return ( "Steam application ID", ItemPage("Q337535") ).
-        """
+    @functools.lru_cache
+    def get_property_label(self, prop):
         """Return property's label (for instance, "Steam application ID" for P1733)."""
-        if prop in self.property_info_cache:
-            return self.property_info_cache[prop]
+        prop_page = pywikibot.PropertyPage(self.repo, prop)
 
+        if "en" in prop_page.labels:
+            return prop_page.labels["en"]
+        else:
+            return prop
+
+    @functools.lru_cache
+    def get_property_stated_in_value(self, prop):
+        """Return property's "stated in" value (for instance, ItemPage("Q337535") for P1733)."""
         prop_page = pywikibot.PropertyPage(self.repo, prop)
 
         if "P9073" not in prop_page.claims:
             raise RuntimeError(f"applicable 'stated in' value not set for {prop}")
-        stated_in_value = prop_page.claims["P9073"][0].getTarget()
-
-        if "en" in prop_page.labels:
-            property_label = prop_page.labels["en"]
-        else:
-            property_label = prop
-
-        result = (property_label, stated_in_value)
-        self.property_info_cache[prop] = result
-        return result
+        return prop_page.claims["P9073"][0].getTarget()
 
     def generate_matched_by_source(self):
         """Create a Wikidata "matched by identifier from" source."""

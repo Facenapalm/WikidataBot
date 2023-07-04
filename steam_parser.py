@@ -788,6 +788,7 @@ class ExistingItemProcessor(ItemProcessor):
             "Q64170203", # video game project
             "Q64170508", # unfinished or abandoned video game project
             "Q90181054", # video game episode
+            "Q107458055", # director's cut
             "Q107636751", # cosmetic downloadable content
             "Q111223304", # video game reboot
             "Q111662771", # clothing downloadable content
@@ -812,6 +813,8 @@ class ExistingItemProcessor(ItemProcessor):
             raise RuntimeError("Several Steam application IDs found")
         steam_claim = item.claims["P1733"][0]
         steam_id = steam_claim.getTarget()
+        if steam_id is None:
+            raise RuntimeError("Steam application ID set to unknown value or no value")
 
         super().__init__(item, SteamPage(steam_id))
 

@@ -30,23 +30,23 @@ import re
 import time
 import requests
 import pywikibot
-from common.seek_basis import BaseSeekerBot
+from common.seek_basis import SearchIDSeekerBot
 
-class ModDBSeekerBot(BaseSeekerBot):
+class ModDBSeekerBot(SearchIDSeekerBot):
+    headers = {
+        "User-Agent": "Wikidata connecting bot",
+    }
+
     def __init__(self):
         super().__init__(
-            database_prop="P6774",
-            default_matching_prop="P1733",
-            matching_prop_whitelist=["P1733", "P2725"],
+            database_property="P6774",
+            default_matching_property="P1733",
+            allowed_matching_properties=["P1733", "P2725"],
         )
 
         get_item = lambda x: pywikibot.ItemPage(self.repo, x)
 
-        self.headers = {
-            "User-Agent": "Wikidata connecting bot",
-        }
-
-        self.engine_prop = "P408"
+        self.engine_property = "P408"
         self.engines_map = {
             "3d-game-studio": get_item("Q229443"),
             "3d-rad": get_item("Q4636302"),
@@ -200,7 +200,7 @@ class ModDBSeekerBot(BaseSeekerBot):
         else:
             raise RuntimeError(f"can't get search results for query `{query}`. Status code: {response.status_code}")
 
-    def parse_entry(self, entry_id, quiet=False):
+    def parse_entry(self, entry_id):
         response = requests.get(f"https://www.moddb.com/games/{entry_id}", headers=self.headers)
         time.sleep(2)
         if not response:
@@ -227,7 +227,7 @@ class ModDBSeekerBot(BaseSeekerBot):
             engine_slug = match.group(1)
             if engine_slug in self.engines_map:
                 if self.engines_map[engine_slug] is not None:
-                    result[self.engine_prop] = self.engines_map[engine_slug]
+                    result[self.engine_property] = self.engines_map[engine_slug]
             else:
                 print(f"WARNING: unknown engine `{engine_slug}` for game `{entry_id}`")
         else:

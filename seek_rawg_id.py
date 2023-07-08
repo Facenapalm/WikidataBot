@@ -34,7 +34,7 @@ Script requires RAWG API key, place it at ./keys/rawg.key file.
 import requests
 import re
 from os.path import isfile
-from common.seek_basis import BaseSeekerBot
+from common.seek_basis import SearchIDSeekerBot
 
 STORES_DATA = {
     1: {
@@ -93,16 +93,16 @@ STORES_DATA = {
 
 REVERSE_MATCHING = { entry["property"]: key for key, entry in STORES_DATA.items() }
 
-class RawgSeekerBot(BaseSeekerBot):
+class RawgSeekerBot(SearchIDSeekerBot):
     headers = {
         "User-Agent": "Wikidata connecting bot",
     }
 
     def __init__(self):
         super().__init__(
-            database_prop="P9968",
-            default_matching_prop="P1733",
-            matching_prop_whitelist=[entry["property"] for entry in STORES_DATA.values()],
+            database_property="P9968",
+            default_matching_property="P1733",
+            allowed_matching_properties=[entry["property"] for entry in STORES_DATA.values()],
         )
 
         filename = "keys/rawg.key"
@@ -117,7 +117,7 @@ class RawgSeekerBot(BaseSeekerBot):
             ( "search", query ),
             ( "page_size", max_results ),
             ( "page", 1 ),
-            ( "stores", REVERSE_MATCHING[self.matching_prop] ),
+            ( "stores", REVERSE_MATCHING[self.matching_property] ),
         ]
         response = requests.get("https://api.rawg.io/api/games", params=params, headers=self.headers)
         return [result["slug"] for result in response.json()["results"]]

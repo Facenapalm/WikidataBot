@@ -28,20 +28,17 @@ To get started, type:
 
 import requests
 import re
-from common.seek_basis import BaseSeekerBot
+from common.seek_basis import SearchIDSeekerBot
 
-class MailRuSeekerBot(BaseSeekerBot):
+class MailRuSeekerBot(SearchIDSeekerBot):
     headers = {
         "User-Agent": "Wikidata connecting bot",
     }
 
     def __init__(self):
         super().__init__(
-            database_prop="P9697",
-            default_matching_prop="P1733",
-            matching_prop_whitelist=["P1733"],
-
-            should_set_properties=False,
+            database_property="P9697",
+            default_matching_property="P1733",
         )
 
     def search(self, query, max_results=None):
@@ -50,14 +47,9 @@ class MailRuSeekerBot(BaseSeekerBot):
         ]
         response = requests.get('https://api.games.mail.ru/pc/search_suggest/', params=params, headers=self.headers)
         if response:
-            result = [item["slug"] for item in response.json()["game"]["items"]]
-            if max_results:
-                return result[:max_results]
-            else:
-                return result
+            return [item["slug"] for item in response.json()["game"]["items"]]
         else:
-            print(f"WARNING: can't get search results for query `{query}`")
-            return []
+            raise RuntimeError(f"can't get search results for query `{query}`. Status code: {response.status_code}")
 
     def parse_entry(self, entry_id):
         result = ""

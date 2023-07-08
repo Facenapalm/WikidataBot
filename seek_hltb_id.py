@@ -29,20 +29,17 @@ To get started, type:
 import re
 import requests
 from howlongtobeatpy import HowLongToBeat
-from common.seek_basis import BaseSeekerBot
+from common.seek_basis import SearchIDSeekerBot
 
-class HLTBSeekerBot(BaseSeekerBot):
+class HLTBSeekerBot(SearchIDSeekerBot):
     headers = {
         "User-Agent": "Wikidata connecting bot",
     }
 
     def __init__(self):
         super().__init__(
-            database_prop="P2816",
-            default_matching_prop="P1733",
-            matching_prop_whitelist=["P1733"],
-
-            should_set_properties=False,
+            database_property="P2816",
+            default_matching_property="P1733",
         )
 
         self.hltb = HowLongToBeat(0.5)

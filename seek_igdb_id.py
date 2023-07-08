@@ -28,13 +28,9 @@ To get started, type:
 
 import pywikibot
 from common.igdb_wrapper import IGDB
-from common.seek_basis import BaseSeekerBot
+from common.seek_basis import DirectIDSeekerBot
 
-class IGDBSeekerBot(BaseSeekerBot):
-    # Unlike most databases, IGDB allows user to directly fetch games that have a link to certain
-    # video game distribution platforms like Steam and GOG. That means our standard algorithm
-    # based on search() and parse_entry() is not required. We'll just re-implement process_item()
-    # instead.
+class IGDBSeekerBot(DirectIDSeekerBot):
 
     queries = {
         "P1733": [
@@ -56,55 +52,27 @@ class IGDBSeekerBot(BaseSeekerBot):
 
     def __init__(self):
         super().__init__(
-            database_prop="P5794",
-            default_matching_prop="P1733",
-            matching_prop_whitelist=["P1733", "P2725", "P6278"],
-
-            should_set_properties=False,
+            database_property="P5794",
+            qualifier_property="P9043",
+            default_matching_property="P1733",
+            allowed_matching_properties=["P1733", "P2725", "P6278"],
         )
-        self.numeric_prop = "P9043"
         self.wrapper = IGDB()
 
-    def seek_database_entry(self, item):
-        if self.matching_prop not in item.claims:
-            raise RuntimeError(f"{self.matching_prop_label} not found in the item")
-        if len(item.claims[self.matching_prop]) > 1:
-            raise RuntimeError(f"several {self.matching_prop_label}s found")
-        self.matching_value = item.claims[self.matching_prop][0].getTarget()
-
+    def seek_database_entry(self):
         result = []
-        for endpoint, query in self.queries[self.matching_prop]:
+        for endpoint, query in self.queries[self.matching_property]:
             result += self.wrapper.request(endpoint, query.format(self.matching_value))
 
         if len(result) == 0:
-            raise RuntimeError(f"no IGDB entries are linked to {self.matching_prop_label} `{self.matching_value}`")
+            raise RuntimeError(f"no IGDB entries are linked to {self.matching_label} `{self.matching_value}`")
         if len(result) > 1:
-            raise RuntimeError(f"several IGDB entries are linked to {self.matching_prop_label} `{self.matching_value}`")
+            raise RuntimeError(f"several IGDB entries are linked to {self.matching_label} `{self.matching_value}`")
 
         igdb_id = str(result[0]["game"])
         igdb_slug = self.wrapper.get_slug_by_id(igdb_id)
 
-        return (igdb_slug, igdb_id)
-
-    def process_item(self, item):
-        try:
-            if item.isRedirectPage():
-                raise RuntimeError("item is a redirect page")
-            if self.database_prop in item.claims:
-                raise RuntimeError(f"{self.database_prop_label} already set")
-
-            igdb_slug, igdb_id = self.seek_database_entry(item)
-
-            claim = pywikibot.Claim(self.repo, self.database_prop)
-            claim.setTarget(igdb_slug)
-            qualifier = pywikibot.Claim(self.repo, self.numeric_prop)
-            qualifier.setTarget(igdb_id)
-            claim.addQualifier(qualifier)
-            claim.addSources(self.generate_matched_by_source())
-            item.addClaim(claim, summary=f"Add {self.database_prop_label} based on matching {self.matching_prop_label}")
-            print(f"{item.title()}: IGDB ID set to `{igdb_slug}` (numeric id `{igdb_id}`)")
-        except RuntimeError as error:
-            print(f"{item.title()}: {error}")
+        return ( [(igdb_slug, igdb_id)], {} )
 
 if __name__ == "__main__":
     IGDBSeekerBot().run()

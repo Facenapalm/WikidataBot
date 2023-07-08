@@ -28,21 +28,18 @@ To get started, type:
 
 import requests
 import re
-from common.seek_basis import BaseSeekerBot
+from common.seek_basis import SearchIDSeekerBot
 
-class StopGameSeekerBot(BaseSeekerBot):
+class StopGameSeekerBot(SearchIDSeekerBot):
+    headers = {
+        "User-Agent": "Wikidata connecting bot",
+    }
+
     def __init__(self):
         super().__init__(
-            database_prop="P10030",
-            default_matching_prop="P1733",
-            matching_prop_whitelist=["P1733"],
-
-            should_set_properties=False,
+            database_property="P10030",
+            default_matching_property="P1733",
         )
-
-        self.headers = {
-            "User-Agent": "Wikidata connecting bot",
-        }
 
     def search(self, query, max_results=None):
         params = [
@@ -50,14 +47,9 @@ class StopGameSeekerBot(BaseSeekerBot):
         ]
         response = requests.get('https://stopgame.ru/ajax/search/games', params=params, headers=self.headers)
         if response:
-            result = [x["url"][6:] for x in response.json()["results"] if x["url"].startswith("/game/")]
-            if max_results:
-                return result[:max_results]
-            else:
-                return result
+            return [x["url"][6:] for x in response.json()["results"] if x["url"].startswith("/game/")]
         else:
-            print(f"WARNING: can't get search results for query `{query}`")
-            return []
+            raise RuntimeError(f"can't get search results for query `{query}`. Status code: {response.status_code}")
 
     def parse_entry(self, entry_id):
         response = requests.get('https://stopgame.ru/game/' + entry_id, headers=self.headers)

@@ -30,7 +30,7 @@ To get started, type:
 import re
 import requests
 from requests.adapters import HTTPAdapter
-from common.seek_basis import BaseSeekerBot
+from common.seek_basis import SearchIDSeekerBot
 
 IDS_DATA = [
     {
@@ -47,16 +47,16 @@ IDS_DATA = [
     },
 ]
 
-class RiotPixelsSeekerBot(BaseSeekerBot):
+class RiotPixelsSeekerBot(SearchIDSeekerBot):
     headers = {
         "User-Agent": "Wikidata connecting bot",
     }
 
     def __init__(self):
         super().__init__(
-            database_prop="P10393",
-            default_matching_prop="P1733",
-            matching_prop_whitelist=[entry["property"] for entry in IDS_DATA],
+            database_property="P10393",
+            default_matching_property="P1733",
+            allowed_matching_properties=[entry["property"] for entry in IDS_DATA],
         )
 
         self.session = requests.Session()

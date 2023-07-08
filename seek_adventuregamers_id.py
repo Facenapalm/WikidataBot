@@ -29,9 +29,9 @@ To get started, type:
 
 import re
 import requests
-from common.seek_basis import BaseSeekerBot
+from common.seek_basis import SearchIDSeekerBot
 
-class AdventureGamersSeekerBot(BaseSeekerBot):
+class AdventureGamersSeekerBot(SearchIDSeekerBot):
     matchers = [
         {
             'regex': r'https://store\.steampowered\.com/app/(\d+)/',
@@ -57,9 +57,9 @@ class AdventureGamersSeekerBot(BaseSeekerBot):
 
     def __init__(self):
         super().__init__(
-            database_prop='P7005',
-            default_matching_prop='P1733',
-            matching_prop_whitelist=['P1733', 'P2725', 'P4477', 'P7294'],
+            database_property='P7005',
+            default_matching_property='P1733',
+            allowed_matching_properties=['P1733', 'P2725', 'P4477', 'P7294'],
         )
 
     def search(self, query, max_results=None):
@@ -70,11 +70,7 @@ class AdventureGamersSeekerBot(BaseSeekerBot):
         if not response:
             raise RuntimeError(f'Query `{query}` resulted in {response.status_code}: {response.reason}')
 
-        result = re.findall(r'<a href="/games/view/(\d+)">Full game details</a>', response.text)
-        if max_results:
-            return result[:max_results]
-        else:
-            return result
+        return re.findall(r'<a href="/games/view/(\d+)">Full game details</a>', response.text)
 
     def parse_entry(self, entry_id):
         response = requests.get(f'https://adventuregamers.com/games/view/{entry_id}', headers=self.headers)

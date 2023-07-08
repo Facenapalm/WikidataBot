@@ -29,20 +29,20 @@ To get started, type:
 
 import re
 import requests
-from common.seek_basis import BaseSeekerBot
+from common.seek_basis import SearchIDSeekerBot
 
-class IndieMagSeekerBot(BaseSeekerBot):
+class IndieMagSeekerBot(SearchIDSeekerBot):
+    headers = {
+        "User-Agent": "Wikidata connecting bot",
+    }
+
     def __init__(self):
         super().__init__(
-            database_prop="P9870",
-            default_matching_prop="P1733",
-            matching_prop_whitelist=["P1733", "P2725"],
+            database_property="P9870",
+            default_matching_property="P1733",
+            allowed_matching_properties=["P1733", "P2725"],
             additional_query_lines=["?item wdt:P136 wd:Q2762504 ."], # indie games only
         )
-
-        self.headers = {
-            "User-Agent": "Wikidata connecting bot",
-        }
 
     def search(self, query, max_results=None):
         response = requests.get(f'https://www.indiemag.fr/search/node/{query}', headers=self.headers)
@@ -50,11 +50,7 @@ class IndieMagSeekerBot(BaseSeekerBot):
             print(f"WARNING: query `{query}` resulted in {response.status_code}: {response.reason}")
             return []
         html = response.text
-        result = re.findall(r'<div class="search-result">\s*<div class="vignette apercu">\s*<div class="image">\s*<a href="/jeux/([a-z0-9\-]+)"', html)
-        if max_results:
-            return result[:max_results]
-        else:
-            return result
+        return re.findall(r'<div class="search-result">\s*<div class="vignette apercu">\s*<div class="image">\s*<a href="/jeux/([a-z0-9\-]+)"', html)
 
     def parse_entry(self, entry_id):
         response = requests.get(f'https://www.indiemag.fr/jeux/{entry_id}', headers=self.headers)

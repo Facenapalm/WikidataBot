@@ -28,20 +28,17 @@ To get started, type:
 
 import re
 import requests
-from common.seek_basis import BaseSeekerBot
+from common.seek_basis import SearchIDSeekerBot
 
-class UVLSeeker(BaseSeekerBot):
+class UVLSeeker(SearchIDSeekerBot):
     headers = {
         'User-Agent': 'Wikidata connecting bot',
     }
 
     def __init__(self):
         super().__init__(
-            database_prop='P7555',
-            default_matching_prop='P1733',
-            matching_prop_whitelist=['P1733'],
-
-            should_set_properties=True
+            database_property='P7555',
+            default_matching_property='P1733',
         )
 
     def preprocess_query(self, query):
@@ -56,11 +53,7 @@ class UVLSeeker(BaseSeekerBot):
         if not response:
             raise RuntimeError(f'Query `{query}` resulted in {response.status_code}: {response.reason}')
 
-        result = re.findall(r'<td><a href="/game-(\d+)-', response.text)
-        if max_results:
-            return result[:max_results]
-        else:
-            return result
+        return re.findall(r'<td><a href="/game-(\d+)-', response.text)
 
     def parse_entry(self, entry_id):
         response = requests.get(f'https://www.uvlist.net/game-{entry_id}', headers=self.headers)
@@ -75,30 +68,27 @@ class UVLSeeker(BaseSeekerBot):
             return {}
         xrefs = match.group(1)
 
-        result = {}
+        properties = {}
         match = re.search(r'href="https?://store\.steampowered\.com/app/(\d+)[/"]', xrefs)
         if match:
-            result['P1733'] = match.group(1)
+            properties['P1733'] = match.group(1)
         match = re.search(r'href="https?://www\.gog\.com/(?:en/)?(game/[a-z0-9_]+)[?"]', xrefs)
         if match:
-            result['P2725'] = match.group(1)
+            properties['P2725'] = match.group(1)
 
-        crosslinks = []
+        crosslinks = [ (entry_id, None) ]
 
         def parse_crosslinks(section_matcher):
             match = re.search(section_matcher, html)
             if match:
                 nonlocal crosslinks
-                crosslinks += re.findall(r'/game-(\d+)-', match.group(0))
+                crosslinks.extend([(crosslink, None) for crosslink in re.findall(r'/game-(\d+)-', match.group(0))])
 
         parse_crosslinks(r'version of(?:\s*(?:<br/>|<a .*?</a>))+')
         parse_crosslinks(r'ported to(?:\s*(?:<br/>|<a .*?</a>))+')
         parse_crosslinks(r'port of(?:\s*(?:<br/>|<a .*?</a>))+')
 
-        if crosslinks:
-            result['P7555'] = crosslinks
-
-        return result
+        return (crosslinks, properties)
 
 if __name__ == '__main__':
     UVLSeeker().run()

@@ -24,6 +24,10 @@ import pywikibot
 from datetime import datetime
 from pywikibot import pagegenerators as pg
 
+def get_first_key(dictionary):
+    """Return first iterable key of the dictionary."""
+    return next(iter(dictionary))
+
 def get_current_wbtime():
     """Return current UTC time as an pywikibot.WbTime object."""
     timestamp = datetime.utcnow()

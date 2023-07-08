@@ -32,7 +32,7 @@ import re
 import time
 import requests
 from urllib.parse import unquote
-from common.seek_basis import BaseSeekerBot
+from common.seek_basis import SearchIDSeekerBot
 
 IDS_DATA = {
     "igdb": {
@@ -63,16 +63,16 @@ IDS_DATA = {
     # TODO: GOG DB (for example: https://lutris.net/games/the-chaos-engine/ ) ?
 }
 
-class LutrisSeekerBot(BaseSeekerBot):
+class LutrisSeekerBot(SearchIDSeekerBot):
     headers = {
         "User-Agent": "Wikidata connecting bot",
     }
 
     def __init__(self):
         super().__init__(
-            database_prop="P7597",
-            default_matching_prop="P1733",
-            matching_prop_whitelist=[entry["property"] for entry in IDS_DATA.values()],
+            database_property="P7597",
+            default_matching_property="P1733",
+            allowed_matching_properties=[entry["property"] for entry in IDS_DATA.values()],
         )
 
     def search(self, query, max_results=None):
@@ -85,11 +85,7 @@ class LutrisSeekerBot(BaseSeekerBot):
         if not response:
             raise RuntimeError(f"can't get search results for query `{query}`. Status code: {response.status_code}")
 
-        results = re.findall(r"<div class=[\"']game-preview[\"']>\s+<a href=[\"']/games/([^\"']+)/\"", response.text)
-        if max_results:
-            return results[:max_results]
-        else:
-            return results
+        return re.findall(r"<div class=[\"']game-preview[\"']>\s+<a href=[\"']/games/([^\"']+)/\"", response.text)
 
     def parse_entry(self, entry_id):
         response = requests.get(f"https://lutris.net/games/{entry_id}", headers=self.headers)

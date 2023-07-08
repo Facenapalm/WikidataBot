@@ -29,19 +29,18 @@ To get started, type:
 import re
 import requests
 from time import sleep
-from common.seek_basis import BaseSeekerBot
+from common.seek_basis import SearchIDSeekerBot
 
-class TuxDBSeekerBot(BaseSeekerBot):
+class TuxDBSeekerBot(SearchIDSeekerBot):
+    headers = {
+        "User-Agent": "Wikidata connecting bot",
+    }
+
     def __init__(self):
         super().__init__(
-            database_prop="P11307",
-            default_matching_prop="P1733",
-            matching_prop_whitelist=["P1733"],
+            database_property="P11307",
+            default_matching_property="P1733",
         )
-
-        self.headers = {
-            "User-Agent": "Wikidata connecting bot",
-        }
 
     def search(self, query, max_results=None):
         files = {
@@ -53,11 +52,7 @@ class TuxDBSeekerBot(BaseSeekerBot):
         if not response:
             raise RuntimeError(f'Query `{query}` resulted in {response.status_code}: {response.reason}')
 
-        result = re.findall(r'<a href="https://tuxdb\.com/game/(\d+)"><img color="1"', response.text)
-        if max_results:
-            return result[:max_results]
-        else:
-            return result
+        return re.findall(r'<a href="https://tuxdb\.com/game/(\d+)"><img color="1"', response.text)
 
     def parse_entry(self, entry_id):
         sleep(0.5)

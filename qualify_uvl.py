@@ -253,7 +253,7 @@ class UVLQualifyingBot(QualifyingBot):
     def get_qualifier_values(self, base_value):
         response = requests.get(f'https://www.uvlist.net/game-{base_value}', headers=self.headers)
         if not response:
-            return []
+            raise RuntimeError(f"can't get info ({response.status_code})")
         html = response.text
 
         match = re.search(r'<a class="bold platinfo".*?>(.*?)</a>', html)
@@ -262,8 +262,7 @@ class UVLQualifyingBot(QualifyingBot):
 
         platform = match.group(1)
         if platform not in self.platform_map:
-            print(f"{base_value}: unknown platform {platform}")
-            return []
+            raise RuntimeError(f"unknown platform {platform}")
 
         return [self.platform_map[platform]]
 

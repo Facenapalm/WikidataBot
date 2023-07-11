@@ -66,7 +66,7 @@ class TGDBQualifyingBot(QualifyingBot):
         ]
         response = requests.get('https://thegamesdb.net/game.php', params=params, headers=self.headers)
         if not response:
-            return []
+            raise RuntimeError(f"can't get info ({response.status_code})")
         html = response.text
 
         match = re.search(r'<p>Platform: <a href="/platform\.php\?id=(\d+)">(.*?)</a></p>', html)
@@ -76,8 +76,7 @@ class TGDBQualifyingBot(QualifyingBot):
         platform_id = match.group(1)
         platform_name = match.group(2)
         if platform_id not in self.platform_map:
-            print(f"{base_value}: platform {platform_id} ({platform_name}) isn't linked with Wikidata ")
-            return []
+            raise RuntimeError(f"platform {platform_id} ({platform_name}) isn't linked with Wikidata")
 
         return [self.platform_map[platform_id]]
 

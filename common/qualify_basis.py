@@ -59,7 +59,7 @@ class QualifyingBot:
                     qualifier.setTarget(qualifier_value)
                     claim.addQualifier(qualifier, summary=f"Add qualifier to {self.base_property_name} `{base_value}`")
                     print(f"{base_value}: qualifier set to `{self.get_verbose_value(qualifier_value)}`")
-            except Exception as error:
+            except RuntimeError as error:
                 print(f"{base_value}: {error}")
 
     def run(self):

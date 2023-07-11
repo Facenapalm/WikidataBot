@@ -49,8 +49,7 @@ class GameTDBQualifyingBot(QualifyingBot):
             return [pywikibot.ItemPage(self.repo, "Q203597")]
         if base_value.startswith("Switch/"):
             return [pywikibot.ItemPage(self.repo, "Q19610114")]
-        print(f"{base_value}: unknown platform")
-        return []
+        raise RuntimeError("unknown platform")
 
 if __name__ == "__main__":
     GameTDBQualifyingBot().run()

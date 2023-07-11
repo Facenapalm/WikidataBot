@@ -26,7 +26,6 @@ To get started, type:
     python seek_igdb_id.py -h
 """
 
-import pywikibot
 from common.igdb_wrapper import IGDB
 from common.seek_basis import DirectIDSeekerBot
 

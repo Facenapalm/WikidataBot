@@ -29,7 +29,6 @@ To get started, type:
 import re
 import time
 import requests
-import pywikibot
 from common.seek_basis import DirectIDSeekerBot
 
 class IndieDBSeekerBot(DirectIDSeekerBot):

@@ -43,8 +43,7 @@ class EShopQualifyingBot(QualifyingBot):
             return [pywikibot.ItemPage(self.repo, "Q56942")]
         if base_value.endswith("-3ds"):
             return [pywikibot.ItemPage(self.repo, "Q203597")]
-        print(f"{base_value}: unknown platform")
-        return []
+        raise RuntimeError("unknown platform")
 
 if __name__ == "__main__":
     EShopQualifyingBot().run()

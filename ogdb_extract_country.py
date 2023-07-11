@@ -109,6 +109,7 @@ class OGDBBot():
             "Vietnam": get_item("Q881"),
             "Libanon": get_item("Q882"),
             "Südkorea": get_item("Q884"),
+            "Bangladesch": get_item("Q902"),
             "Philippinen": get_item("Q928"),
             "Marokko": get_item("Q1028"),
             "Hong Kong": get_item("Q8646"),

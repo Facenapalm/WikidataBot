@@ -45,8 +45,7 @@ class SMSPowerQualifyingBot(QualifyingBot):
             return [pywikibot.ItemPage(self.repo, "Q1136956")]
         if base_value.endswith("-SC"):
             return [pywikibot.ItemPage(self.repo, "Q1322287")]
-        print(f"{base_value}: unknown platform")
-        return []
+        raise RuntimeError("unknown platform")
 
 if __name__ == "__main__":
     SMSPowerQualifyingBot().run()

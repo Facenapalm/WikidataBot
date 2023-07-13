@@ -246,6 +246,8 @@ class BaseIDSeekerBot:
                     item.addClaim(claim, summary=f"Add {key_verbose} based on {self.database_label}")
                     print(f"{item.title()}: {key_verbose} set to `{value}`")
 
+        except NotImplementedError as error:
+            raise error
         except RuntimeError as error:
             print(f"{item.title()}: {error}")
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2022 Facenapalm
+# Copyright (c) 2023 Facenapalm
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -48,8 +48,6 @@ class LutrisSeekerBotLite(DirectIDSeekerBot):
             raise RuntimeError(f'Lutris entry `{self.matching_value}` have no backlink to IGDB')
         if parsed_entry['P5794'] != self.matching_value:
             raise RuntimeError(f'Lutris entry `{self.matching_value}` backlinks to different IGDB entry')
-        del parsed_entry['P5794']
-
         return ( self.matching_value, parsed_entry )
 
 if __name__ == '__main__':

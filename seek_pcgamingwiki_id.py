@@ -28,6 +28,7 @@ To get started, type:
 
 import re
 import requests
+from urllib.parse import unquote
 from common.seek_basis import DirectIDSeekerBot
 
 class PCGamingWikiSeekerBot(DirectIDSeekerBot):
@@ -45,13 +46,13 @@ class PCGamingWikiSeekerBot(DirectIDSeekerBot):
     def seek_database_entry(self):
         response = requests.get('https://www.pcgamingwiki.com/api/appid.php', params={ 'appid': self.matching_value }, headers=self.headers)
         html = response.text
-        if "No such AppID" in html:
+        if 'No such AppID' in html or 'would you like to create it' in html:
             raise RuntimeError(f'no PCGamingWiki entries are linked to {self.matching_label} `{self.matching_value}`')
 
         match = re.match(r'https?://www\.pcgamingwiki\.com/wiki/(\S+)$', response.url)
         if not match:
             raise RuntimeError(f'unknown link format `{response.url}` (linked to {self.matching_label} `{self.matching_value}`)')
-        slug = match.group(1)
+        slug = unquote(match.group(1))
 
         match = re.search(r'"wgArticleId":(\d+)', html)
         if not match:

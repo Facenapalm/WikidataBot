@@ -20,15 +20,12 @@
 
 """
 Add PCGamingWiki ID (P6337) based on matching Steam application ID (P1733).
-
 To get started, type:
-
     python seek_pcgamingwiki_id.py -h
 """
 
 import re
 import requests
-from urllib.parse import unquote
 from common.seek_basis import DirectIDSeekerBot
 
 class PCGamingWikiSeekerBot(DirectIDSeekerBot):
@@ -44,20 +41,25 @@ class PCGamingWikiSeekerBot(DirectIDSeekerBot):
         )
 
     def seek_database_entry(self):
-        response = requests.get('https://www.pcgamingwiki.com/api/appid.php', params={ 'appid': self.matching_value }, headers=self.headers)
-        html = response.text
-        if 'No such AppID' in html or 'would you like to create it' in html:
-            raise RuntimeError(f'no PCGamingWiki entries are linked to {self.matching_label} `{self.matching_value}`')
+        params = {
+            'action': 'query',
+            'list': 'search',
+            'srsearch': f'"steam appid {self.matching_value}"',
+            'srwhat': 'text',
+            'format': 'json',
+        }
+        response = requests.get('https://www.pcgamingwiki.com/w/api.php', params=params, headers=self.headers)
+        if not response:
+            raise RuntimeError(f"can't get info for game `{self.matching_value}`. Status code: {response.status_code}")
+        hits = response.json()['query']['search']
+        if not hits:
+            raise RuntimeError(f"no PCGamingWiki entries are linked to {self.matching_label} `{self.matching_value}`")
+        if len(hits) > 1:
+            raise RuntimeError(f'several PCGamingWiki entries are linked to {self.matching_label} `{self.matching_value}`')
+        game_info = hits[0]
 
-        match = re.match(r'https?://www\.pcgamingwiki\.com/wiki/(\S+)$', response.url)
-        if not match:
-            raise RuntimeError(f'unknown link format `{response.url}` (linked to {self.matching_label} `{self.matching_value}`)')
-        slug = unquote(match.group(1))
-
-        match = re.search(r'"wgArticleId":(\d+)', html)
-        if not match:
-            raise RuntimeError(f"can't get ID for page {slug}")
-        pageid = match.group(1)
+        slug = game_info['title'].replace(' ', '_')
+        pageid = str(game_info['pageid'])
 
         return ([(slug, pageid)], {})
 

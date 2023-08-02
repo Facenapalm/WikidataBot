@@ -256,13 +256,13 @@ class UVLQualifyingBot(QualifyingBot):
             raise RuntimeError(f"can't get info ({response.status_code})")
         html = response.text
 
-        match = re.search(r'<a class="bold platinfo".*?>(.*?)</a>', html)
+        match = re.search(r'<a class=[\'"]bold platinfo[\'"].*?>(.*?)</a>', html)
         if not match:
             return []
 
         platform = match.group(1)
         if platform not in self.platform_map:
-            raise RuntimeError(f"unknown platform {platform}")
+            raise RuntimeError(f'unknown platform {platform}')
 
         return [self.platform_map[platform]]
 

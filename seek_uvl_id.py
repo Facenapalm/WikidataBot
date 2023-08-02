@@ -53,7 +53,7 @@ class UVLSeeker(SearchIDSeekerBot):
         if not response:
             raise RuntimeError(f'Query `{query}` resulted in {response.status_code}: {response.reason}')
 
-        return re.findall(r'<td><a href="/game-(\d+)-', response.text)
+        return re.findall(r'<td><a href=[\'"]/game-(\d+)-', response.text)
 
     def parse_entry(self, entry_id):
         response = requests.get(f'https://www.uvlist.net/game-{entry_id}', headers=self.headers)
@@ -62,17 +62,17 @@ class UVLSeeker(SearchIDSeekerBot):
             return {}
         html = response.text
 
-        match = re.search(r'<h2 class="acc_head" id="acc_xrefs">([\s\S]+?)</div>', html)
+        match = re.search(r'<h2 class=[\'"]acc_head[\'"] id=[\'"]acc_xrefs[\'"]>([\s\S]+?)</div>', html)
         if not match:
             # print(f'WARNING: no xref section found for video game `{entry_id}`')
             return {}
         xrefs = match.group(1)
 
         properties = {}
-        match = re.search(r'href="https?://store\.steampowered\.com/app/(\d+)[/"]', xrefs)
+        match = re.search(r'href=[\'"]https?://store\.steampowered\.com/app/(\d+)[/\'"]', xrefs)
         if match:
             properties['P1733'] = match.group(1)
-        match = re.search(r'href="https?://www\.gog\.com/(?:en/)?(game/[a-z0-9_]+)[?"]', xrefs)
+        match = re.search(r'href=[\'"]https?://www\.gog\.com/(?:en/)?(game/[a-z0-9_]+)[?\'"]', xrefs)
         if match:
             properties['P2725'] = match.group(1)
 
@@ -84,9 +84,9 @@ class UVLSeeker(SearchIDSeekerBot):
                 nonlocal crosslinks
                 crosslinks.extend([(crosslink, None) for crosslink in re.findall(r'/game-(\d+)-', match.group(0))])
 
-        parse_crosslinks(r'version of(?:\s*(?:<br/>|<a .*?</a>))+')
-        parse_crosslinks(r'ported to(?:\s*(?:<br/>|<a .*?</a>))+')
-        parse_crosslinks(r'port of(?:\s*(?:<br/>|<a .*?</a>))+')
+        parse_crosslinks(r'version of(?:\s*(?:<br */?>|<a .*?</a>))+')
+        parse_crosslinks(r'ported to(?:\s*(?:<br */?>|<a .*?</a>))+')
+        parse_crosslinks(r'port of(?:\s*(?:<br */?>|<a .*?</a>))+')
 
         return (crosslinks, properties)
 

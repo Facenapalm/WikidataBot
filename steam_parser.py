@@ -376,7 +376,7 @@ class SteamPage():
 
         self.steam_id = steam_id
         self.html = html
-        self.retireve_date = pywikibot.WbTime(year=retrieve_date.year, month=retrieve_date.month, day=retrieve_date.day)
+        self.retrieve_date = pywikibot.WbTime(year=retrieve_date.year, month=retrieve_date.month, day=retrieve_date.day)
 
     def cache(self):
         """
@@ -397,9 +397,9 @@ class SteamPage():
         if os.path.isfile(filename):
             os.remove(filename)
 
-    def get_retireve_date(self):
+    def get_retrieve_date(self):
         """Get the date of downloading the HTML (handy for pages taken from cache)."""
-        return self.retireve_date
+        return self.retrieve_date
 
     def generate_source(self):
         """Create a Wikidata "stated in" source linking to this Steam page."""
@@ -408,7 +408,7 @@ class SteamPage():
         steam_id = pywikibot.Claim(repo, "P1733")
         steam_id.setTarget(self.steam_id)
         retrieved = pywikibot.Claim(repo, "P813")
-        retrieved.setTarget(self.retireve_date)
+        retrieved.setTarget(self.retrieve_date)
         return [statedin, steam_id, retrieved]
 
     def get_id(self):
@@ -787,6 +787,7 @@ class ExistingItemProcessor(ItemProcessor):
             "Q62707668", # high resolution texture pack
             "Q64170203", # video game project
             "Q64170508", # unfinished or abandoned video game project
+            "Q96604496", # GOTY edition
             "Q90181054", # video game episode
             "Q107458055", # director's cut
             "Q107636751", # cosmetic downloadable content
@@ -867,7 +868,8 @@ class NewItemProcessor(ItemProcessor):
         if base_property and base_game:
             self.add_claims(base_property, [base_game], "base game")
 
-        item.watch(unwatch=True)
+        if not arguments.watch:
+            item.watch(unwatch=True)
 
 def cache_pages():
     """
@@ -955,9 +957,10 @@ if __name__ == "__main__":
     parser.add_argument("-developer", "-d", type=parse_item_page_arg, nargs="+", action="store", dest="developers", help="wikidata element(s) to state in P178 (optional)")
     parser.add_argument("-series", "-s", type=parse_item_page_arg, action="store", dest="series", help="wikidata element to state in P179 (optional)")
     parser.add_argument("-output", "-o", action="store", dest="output", help="a path to a file to fill with a list of IDs of the processed items, including newly created (optional)")
+    parser.add_argument("-watch", "-w", action="store_true", help="if set, keep newly created items in the user's watchlist")
 
     arguments = parser.parse_args()
     if arguments.output:
-        output = open(arguments.output, "w", encoding="utf-8")
+        output = open(arguments.output, "a", encoding="utf-8")
 
     main(arguments.input)

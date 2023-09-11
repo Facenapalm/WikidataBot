@@ -61,7 +61,7 @@ title_replacements = [
 vg_descriptions_data = [
     # (lang_code, default_description, description_with_year)
     ("ast", "videoxuegu", "videoxuegu espublizáu en {}"),
-    ("be", "камп’ютарная гульня", "камп’ютарная гульня {} году"),
+    ("be", "камп’ютарная гульня", "камп’ютарная гульня {} года"),
     ("be-tarask", "кампутарная гульня", "кампутарная гульня {} року"),
     ("bg", "видеоигра", "видеоигра от {} година"),
     ("ca", "videojoc", "videojoc de {}"),

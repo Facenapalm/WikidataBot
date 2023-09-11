@@ -27,16 +27,29 @@ from igdb.wrapper import IGDBWrapper
 
 class IGDB():
     def __init__(self):
+        self.authenticate()
+
+    def authenticate(self):
+        """Request access token and initialize IGDB wrapper."""
         client_id = open("keys/igdb-id.key").read()
         client_secret = open("keys/igdb-secret.key").read()
         access_token = requests.post(f"https://id.twitch.tv/oauth2/token?client_id={client_id}&client_secret={client_secret}&grant_type=client_credentials").json()["access_token"]
         self.wrapper = IGDBWrapper(client_id, access_token)
 
-    def request(self, endpoint, query):
+    def request(self, endpoint, query, retries=1):
         """Get query result as parsed json."""
-        sleep(.25)
-        result = self.wrapper.api_request(endpoint, query).decode("utf-8")
-        return json.loads(result)
+        try:
+            sleep(.25)
+            result = self.wrapper.api_request(endpoint, query).decode("utf-8")
+            return json.loads(result)
+        except requests.exceptions.HTTPError as error:
+            if error.response.status_code != 401:
+                raise
+            if retries <= 0:
+                raise
+            print('Got 401 Unauthorized, trying to re-authenticate')
+            self.authenticate()
+            return self.request(endpoint, query, retries-1)
 
     def get_slug_by_id(self, igdb_id):
         """Get IGDB ID by IGDB numeric ID."""

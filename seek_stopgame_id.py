@@ -32,13 +32,13 @@ from common.seek_basis import SearchIDSeekerBot
 
 class StopGameSeekerBot(SearchIDSeekerBot):
     headers = {
-        "User-Agent": "Wikidata connecting bot",
+        'User-Agent': 'Wikidata connecting bot',
     }
 
     def __init__(self):
         super().__init__(
-            database_property="P10030",
-            default_matching_property="P1733",
+            database_property='P10030',
+            default_matching_property='P1733',
         )
 
     def search(self, query, max_results=None):
@@ -47,7 +47,7 @@ class StopGameSeekerBot(SearchIDSeekerBot):
         ]
         response = requests.get('https://stopgame.ru/ajax/search/games', params=params, headers=self.headers)
         if response:
-            return [x["url"][6:] for x in response.json()["results"] if x["url"].startswith("/game/")]
+            return [x['url'][6:] for x in response.json()['results'] if x['url'].startswith('/game/')]
         else:
             raise RuntimeError(f"can't get search results for query `{query}`. Status code: {response.status_code}")
 
@@ -57,10 +57,10 @@ class StopGameSeekerBot(SearchIDSeekerBot):
             print(f"WARNING: can't get info for game `{entry_id}`")
             return {}
         html = response.text
-        match = re.search(r"<div[^>]*>\s*Сайт игры\s*</div>\s*<div[^>]*>(?:(?!</div>)[\s\S])*<a href='https://store\.steampowered\.com/app/(\d+)' target='_blank' rel='nofollow'>Steam</a>", html)
+        match = re.search(r'<div[^>]*>\s*Сайт игры\s*</div>\s*<div[^>]*>(?:(?!</div>)[\s\S])*<a href=[\'"]https://store\.steampowered\.com/app/(\d+)[\'"] target=[\'"]_blank[\'"] rel=[\'"]nofollow[\'"]>Steam</a>', html)
         if not match:
             return {}
-        return { "P1733": match.group(1) }
+        return { 'P1733': match.group(1) }
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     StopGameSeekerBot().run()

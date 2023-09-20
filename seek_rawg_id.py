@@ -111,7 +111,7 @@ class RawgSeekerBot(SearchIDSeekerBot):
         except FileNotFoundError as error:
             raise RuntimeError("RAWG API key unspecified") from error
 
-    def request(self, url, params={}, retries=3):
+    def request(self, url, params={}, retries=5):
         try:
             params["key"] = self.api_key
             response = requests.get(url, params=params, headers=self.headers)
@@ -121,7 +121,7 @@ class RawgSeekerBot(SearchIDSeekerBot):
             if retries <= 0:
                 raise
             print("WARNING: request failed; sleeping and retrying...")
-            sleep(2)
+            sleep(10)
             return self.request(url, params, retries-1)
 
     def search(self, query, max_results=3):

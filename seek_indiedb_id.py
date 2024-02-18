@@ -45,7 +45,7 @@ class IndieDBSeekerBot(DirectIDSeekerBot):
         response = requests.get(f"https://www.indiedb.com/games/{slug}", headers=self.headers)
         time.sleep(2)
         if response:
-            return "NOT available on Indie DB" not in response.text
+            return "NOT available on IndieDB" not in response.text
         else:
             print(f"WARNING: failed to get `{slug}`")
             return False

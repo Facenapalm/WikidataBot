@@ -19,7 +19,7 @@
 # SOFTWARE.
 
 """
-Add Games@Mail.ru ID (P9697) based on matching Steam application ID (P1733).
+Add VK Play ID (P9697) based on matching Steam application ID (P1733).
 
 To get started, type:
 
@@ -30,7 +30,7 @@ import requests
 import re
 from common.seek_basis import SearchIDSeekerBot
 
-class MailRuSeekerBot(SearchIDSeekerBot):
+class VKPlaySeekerBot(SearchIDSeekerBot):
     headers = {
         "User-Agent": "Wikidata connecting bot",
     }
@@ -42,18 +42,24 @@ class MailRuSeekerBot(SearchIDSeekerBot):
         )
 
     def search(self, query, max_results=None):
-        params = [
-            ( "query", query ),
-        ]
-        response = requests.get('https://api.games.mail.ru/pc/search_suggest/', params=params, headers=self.headers)
+        if not max_results:
+            max_results = 5
+        elif max_results < 3:
+            max_results = 3
+        params = {
+            "alias": "game",
+            "query": query,
+            "limit": max_results
+        }
+        response = requests.get('https://api.vkplay.ru/pc/v3/search/', params=params, headers=self.headers)
         if response:
-            return [item["slug"] for item in response.json()["game"]["items"]]
+            return [item["extra"]["slug"] for item in response.json()["items"]]
         else:
             raise RuntimeError(f"can't get search results for query `{query}`. Status code: {response.status_code}")
 
     def parse_entry(self, entry_id):
         result = ""
-        response = requests.get(f"https://api.games.mail.ru/pc/v2/game/{entry_id}/", headers=self.headers)
+        response = requests.get(f"https://api.vkplay.ru/pc/v3/game/{entry_id}/", headers=self.headers)
         try:
             if not response:
                 raise RuntimeError("can't get info")
@@ -70,4 +76,4 @@ class MailRuSeekerBot(SearchIDSeekerBot):
         return { "P1733": result }
 
 if __name__ == "__main__":
-    MailRuSeekerBot().run()
+    VKPlaySeekerBot().run()

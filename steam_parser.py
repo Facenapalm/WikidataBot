@@ -617,11 +617,15 @@ class SteamPage():
 
     def get_metacritic_id(self):
         """Get Metacritic slug (for instance, `game/pc/mosaic`), if stated."""
-        match = re.search(r"<a href=\"https://www\.metacritic\.com/(game/pc/[\-a-z0-9!+_()]+)(?:\?[^\"]+)\" target=\"_blank\">Read Critic Reviews</a>", self.html)
-        if match:
-            return match.group(1)
+        match = re.search(r"<a href=\"https://www\.metacritic\.com/game/(?:pc/)?([\-a-z0-9!+_()]+)(?:\?[^\"]+)\" target=\"_blank\">Read Critic Reviews</a>", self.html)
+        if not match:
+            return None
 
-        return None
+        metacritic_id = match.group(1)
+        if not re.match(r"^[a-z\d]+(\-[a-z\d]+)*$", metacritic_id):
+            return None
+
+        return metacritic_id
 
 
 class ItemProcessor():
@@ -751,8 +755,7 @@ class ItemProcessor():
         self.add_claims_with_update("P404", gamemodes, "game mode", add_sources=True)
         self.add_claims_with_qualifiers("P407", "P518", languages, "language")
         if metacritic:
-            data = (metacritic, [self.steam_page.platform_map["pc"]])
-            self.add_claims_with_qualifiers("P1712", "P400", [data], "Metacritic ID")
+            self.add_claims("P12054", [metacritic], "Metacritic ID")
 
         print(f"{self.steam_page.get_id()}: Item {self.item_page.title()} processed")
         if output:

@@ -42,15 +42,20 @@ class VKPlaySeekerBot(SearchIDSeekerBot):
         )
 
     def search(self, query, max_results=None):
+        if len(query) < 3:
+            return []
+
         if not max_results:
             max_results = 5
         elif max_results < 3:
             max_results = 3
+
         params = {
             "alias": "game",
             "query": query,
             "limit": max_results
         }
+
         response = requests.get('https://api.vkplay.ru/pc/v3/search/', params=params, headers=self.headers)
         if response:
             return [item["extra"]["slug"] for item in response.json()["items"]]

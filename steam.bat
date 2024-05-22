@@ -10,6 +10,7 @@ python seek_hltb_id.py temp.txt
 python seek_indiemag_id.py temp.txt
 python seek_lutris_id.py temp.txt
 python seek_vkplay_id.py temp.txt
+python seek_mobygames_id.py temp.txt
 python seek_moddb_id.py temp.txt
 python seek_pcgamingwiki_id.py temp.txt
 python seek_riotpixels_id.py temp.txt

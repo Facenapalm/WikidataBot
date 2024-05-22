@@ -24,6 +24,8 @@ Add MobyGames game ID (P11688) based on matching Steam application ID (P1733).
 To get started, type:
 
     python seek_mobygames_id.py -h
+
+Script requires API key, place it at ./keys/mobygames.key file.
 """
 
 import re
@@ -90,19 +92,7 @@ class MobyGamesSeekerBot(DirectIDSeekerBot):
         if len(games) > 1:
             raise RuntimeError(f'several MobyGames entries are linked to {self.matching_label} `{self.matching_value}`')
 
-        mobygames_id = str(games[0]['id'])
-
-        # There is no way to extract old-style slug-like ID from API, and we can't really extract it
-        # from URL:
-        # 1. Different games might have the same slug (`https://www.mobygames.com/game/1630/tetris/`
-        #    and `https://www.mobygames.com/game/141393/tetris/` as an example), so extracted slug
-        #    might lead to the wrong game.
-        # 2. Games added after February 2023 are unaccessable via slugs at all.
-        # 3. Older games eventually drop slug support.
-
-        # mobygames_slug = re.match(r'https://www\.mobygames\.com/game/\d+/([^/]+)/', games[0]['moby_url']).group(1)
-
-        return mobygames_id
+        return str(games[0]['id'])
 
 if __name__ == '__main__':
     MobyGamesSeekerBot().run()

@@ -57,7 +57,7 @@ class StopGameSeekerBot(SearchIDSeekerBot):
             print(f"WARNING: can't get info for game `{entry_id}`")
             return {}
         html = response.text
-        match = re.search(r'<div[^>]*>\s*Сайт игры\s*</div>\s*<div[^>]*>(?:(?!</div>)[\s\S])*<a href=[\'"]https://store\.steampowered\.com/app/(\d+)[\'"] target=[\'"]_blank[\'"] rel=[\'"]nofollow[\'"]>Steam</a>', html)
+        match = re.search(r'<a class="\S+" href="https://store\.steampowered\.com/app/(\d+)" rel="noopener" target="_blank"><svg viewBox="0 0 20 20"><use href="#v9/steam"></use></svg>Steam</a>', html)
         if not match:
             return {}
         return { 'P1733': match.group(1) }

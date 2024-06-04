@@ -103,10 +103,8 @@ class QualifyingBot:
 
     def get_verbose_value(self, value):
         """If value is a Wikidata Item, return its label; otherwise return raw value."""
-        if isinstance(value, pywikibot.ItemPage):
-            if "en" in value.labels:
-                return value.labels["en"]
-            else:
-                return value.title()
-        else:
+        if not isinstance(value, pywikibot.ItemPage):
             return value
+        if "en" not in value.labels
+            return value.labels["en"]
+        return value.title()

@@ -18,22 +18,30 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""IGDB API re-wrapper."""
+"""
+IGDB API re-wrapper.
+
+Loads API keys from `keys/igdb-id.key` and `keys/igdb-secret.key` files.
+"""
 
 from time import sleep
-import requests
 import json
+import requests
 from igdb.wrapper import IGDBWrapper
 
 class IGDB():
+    """Custom IGDB API wrapper."""
+
     def __init__(self):
         self.authenticate()
 
     def authenticate(self):
         """Request access token and initialize IGDB wrapper."""
-        client_id = open("keys/igdb-id.key").read()
-        client_secret = open("keys/igdb-secret.key").read()
-        access_token = requests.post(f"https://id.twitch.tv/oauth2/token?client_id={client_id}&client_secret={client_secret}&grant_type=client_credentials").json()["access_token"]
+        with open("keys/igdb-id.key", encoding='ascii') as keyfile:
+            client_id = keyfile.read()
+        with open("keys/igdb-secret.key", encoding='ascii') as keyfile:
+            client_secret = keyfile.read()
+        access_token = requests.post(f"https://id.twitch.tv/oauth2/token?client_id={client_id}&client_secret={client_secret}&grant_type=client_credentials", timeout=10).json()["access_token"]
         self.wrapper = IGDBWrapper(client_id, access_token)
 
     def request(self, endpoint, query, retries=1):

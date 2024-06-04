@@ -24,7 +24,6 @@ import functools
 import pywikibot
 from typing import Optional, List
 from argparse import ArgumentParser
-from datetime import datetime
 from common.utils import get_first_key, get_current_wbtime, parse_input_source
 
 class BaseIDSeekerBot:
@@ -46,7 +45,7 @@ class BaseIDSeekerBot:
         default_matching_property: str,
         qualifier_property: Optional[str] = None,
         allowed_matching_properties: Optional[List[str]] = None,
-        additional_query_lines = [],
+        additional_query_lines = None,
         should_set_source: bool = True,
         should_set_properties: bool = True
     ) -> None:
@@ -78,7 +77,12 @@ class BaseIDSeekerBot:
         self.database_item = self.get_property_stated_in_value(database_property)
         self.qualifier_property = qualifier_property
 
-        self.additional_query_lines = "\n".join(additional_query_lines)
+        if additional_query_lines:
+            self.additional_query_lines = "\n".join(additional_query_lines)
+        else:
+            self.additional_query_lines = ""
+
+        self.matching_value = None
 
         if allowed_matching_properties:
             self.allowed_matching_properties = allowed_matching_properties
@@ -94,10 +98,10 @@ class BaseIDSeekerBot:
         """Return property's label (for instance, "Steam application ID" for P1733)."""
         prop_page = pywikibot.PropertyPage(self.repo, property_id)
 
-        if "en" in prop_page.labels:
-            return prop_page.labels["en"]
-        else:
+        if "en" not in prop_page.labels:
             return property_id
+
+        return prop_page.labels["en"]
 
     @functools.lru_cache
     def get_property_stated_in_value(self, property_id: str) -> pywikibot.ItemPage:
@@ -182,7 +186,7 @@ class BaseIDSeekerBot:
         """
         try:
             if item.isRedirectPage():
-                raise RuntimeError(f"item is a redirect page")
+                raise RuntimeError("item is a redirect page")
             if self.database_property in item.claims:
                 raise RuntimeError(f"{self.database_label} already set")
 
@@ -263,7 +267,8 @@ class BaseIDSeekerBot:
         if self.should_set_properties:
             parser_arguments["description"] += f" Then import data based on {self.database_label}."
         if self.allowed_matching_properties:
-            parser_arguments["epilog"] = "Supported base properties: {}".format(", ".join(sorted(self.allowed_matching_properties)))
+            proplist = ", ".join(sorted(self.allowed_matching_properties))
+            parser_arguments["epilog"] = f"Supported base properties: {proplist}"
 
         parser = ArgumentParser(**parser_arguments)
         parser.add_argument("input", help="either a path to the file with the list of IDs of items to process (Qnnn) or a keyword \"all\"")
@@ -320,9 +325,9 @@ class DirectIDSeekerBot(BaseIDSeekerBot):
         result = self.seek_database_entry()
 
         if isinstance(result, str):
-            return (result, {})
-        else:
-            return result
+            result = (result, {})
+
+        return result
 
 class SearchIDSeekerBot(BaseIDSeekerBot):
     """
@@ -343,7 +348,7 @@ class SearchIDSeekerBot(BaseIDSeekerBot):
     Those should be re-implemented in the inherited classes.
     """
 
-    def __init__(self, should_check_aliases: bool = True, *args, **kwargs) -> None:
+    def __init__(self, *args, should_check_aliases: bool = True, **kwargs) -> None:
         """
         :param should_check_aliases: if set to False, bot would seek a database
             entry using item label only. Otherwise bot would also use item
@@ -419,10 +424,10 @@ class SearchIDSeekerBot(BaseIDSeekerBot):
             else:
                 crosslinks, properties = candidate, parsed_entry
 
-            if properties.get(self.matching_property) == self.matching_value:
-                return (crosslinks, properties)
-            else:
+            if properties.get(self.matching_property) != self.matching_value:
                 return None
+
+            return (crosslinks, properties)
 
         query = self.preprocess_query(item.labels[lang])
         for candidate in self.search(query):

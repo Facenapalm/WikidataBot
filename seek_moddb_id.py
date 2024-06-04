@@ -66,6 +66,7 @@ class ModDBSeekerBot(SearchIDSeekerBot):
             "build": get_item("Q1003003"),
             "clausewitz-engine": get_item("Q13218581"),
             "cloaknt": get_item("Q4036308"),
+            "cocos2d-for-iphone": get_item("Q1525915"),
             "cocos2d-x": get_item("Q1525915"),
             "construct": get_item("Q1049161"),
             "construct-2": get_item("Q5164395"),

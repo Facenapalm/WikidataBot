@@ -1,0 +1,4 @@
+requests
+pywikibot
+igdb-api-v4
+howlongtobeatpy

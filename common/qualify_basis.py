@@ -105,6 +105,6 @@ class QualifyingBot:
         """If value is a Wikidata Item, return its label; otherwise return raw value."""
         if not isinstance(value, pywikibot.ItemPage):
             return value
-        if "en" not in value.labels
+        if "en" not in value.labels:
             return value.labels["en"]
         return value.title()

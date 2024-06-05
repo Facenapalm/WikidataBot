@@ -15,6 +15,7 @@ python seek_moddb_id.py temp.txt
 python seek_pcgamingwiki_id.py temp.txt
 python seek_riotpixels_id.py temp.txt
 python seek_stopgame_id.py temp.txt
+python seek_steamgriddb_id.py temp.txt
 python seek_tuxdb_id.py temp.txt
 python seek_uvl_id.py temp.txt
 

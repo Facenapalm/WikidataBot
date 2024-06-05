@@ -42,12 +42,25 @@ class PlayGroundSeekerBot(SearchIDSeekerBot):
             "property": "P1733",
             "regex": r"^https?:\/\/(?:store\.)?steam(?:community|powered)\.com\/app\/(\d+)",
         },
+
+        "epicgames": {
+            "title": "Epic Games Store",
+            "property": "P6278",
+            "regex": r"^https?:\/\/(?:www\.)?(?:store\.)?epicgames\.com\/(?:store\/)?(?:(?:ar|de|en-US|es-ES|es-MX|fr|it|ja|ko|pl|pt-BR|ru|th|tr|zh-CN|zh-Hant)\/)?p(?:roduct)?\/([a-z\d]+(?:[\-]{0,3}[\_]?[^\sA-Z\W\_]+)*)",
+        },
+
+        "microsoftstore": None, # TODO
+        "playstationstore": None, # TODO
+        "ggsel": None,
+        "keysforgamers": None,
+        "plati": None,
     }
 
     def __init__(self):
         super().__init__(
             database_property='P10354',
             default_matching_property='P1733',
+            allowed_matching_properties=['P1733', 'P6278'],
         )
 
     def search(self, query, max_results=None):
@@ -96,11 +109,13 @@ class PlayGroundSeekerBot(SearchIDSeekerBot):
                     print(f'WARNING: unknown store `{store_name}` for `{entry_id}`')
                     continue
                 store_data = self.stores_data[store_name]
+                if store_data is None:
+                    continue
                 if len(store_ids) > 1:
                     print(f'WARNING: several {store_data["title"]} links for `{entry_id}`')
                     continue
                 response = requests.head(f'https://www.playground.ru/shop/redirect/{store_id}', allow_redirects=True)
-                match = re.match(store_data["regex"], response.url)
+                match = re.search(store_data["regex"], response.url)
                 if not match:
                     continue
                 result[store_data["property"]] = match.group(1)

@@ -114,7 +114,7 @@ class PlayGroundSeekerBot(SearchIDSeekerBot):
                 if len(store_ids) > 1:
                     print(f'WARNING: several {store_data["title"]} links for `{entry_id}`')
                     continue
-                response = requests.head(f'https://www.playground.ru/shop/redirect/{store_id}', allow_redirects=True)
+                response = requests.head(f'https://www.playground.ru/shop/redirect/{store_ids[0]}', allow_redirects=True)
                 match = re.search(store_data["regex"], response.url)
                 if not match:
                     continue

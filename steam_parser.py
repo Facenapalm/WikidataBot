@@ -40,10 +40,8 @@ A list of elements to process might be obtained from page:
     https://www.wikidata.org/wiki/Wikidata:Database_reports/Constraint_violations/P1733
 """
 
-import urllib.request
-import time
+import requests
 import re
-import random
 import argparse
 import os.path
 from datetime import datetime
@@ -137,7 +135,7 @@ output = None
 
 repo = pywikibot.Site()
 repo.login()
-get_item = lambda x: pywikibot.ItemPage(repo, x)
+def get_item(x): return pywikibot.ItemPage(repo, x)
 
 steam = get_item("Q337535")
 early_access = get_item("Q17042291")
@@ -168,6 +166,11 @@ class SteamPage():
     One parsed Steam store page related to a videogame, an expansion, a modification or
     a soundtrack.
     """
+
+    headers = {
+        "User-Agent": "Wikidata parser (https://github.com/facenapalm/wikidatabot)",
+        "Cookie": "wants_mature_content=1;birthtime=470682001;lastagecheckage=1-0-1985;Steam_Language=english",
+    }
 
     instance_map = {
         "game": get_item("Q7889"),
@@ -255,8 +258,8 @@ class SteamPage():
         "Polish": get_item("Q809"),
         "Portuguese - Brazil": get_item("Q750553"),
         "Portuguese - Portugal": get_item("Q5146"),
-        "Punjabi (Gurmukhi)": get_item("Q58635"), # Wikidata doesn't have an item for specific writing yet?
-        "Punjabi (Shahmukhi)": get_item("Q58635"), # Wikidata doesn't have an item for specific writing yet?
+        "Punjabi (Gurmukhi)": get_item("Q58635"), # No item for specific writing yet?
+        "Punjabi (Shahmukhi)": get_item("Q58635"), # No item for specific writing yet?
         "Quechua": get_item("Q5218"),
         "Romanian": get_item("Q7913"),
         "Russian": get_item("Q7737"),
@@ -303,31 +306,18 @@ class SteamPage():
     ]
 
     month_names = {
-        "Jan": 1,
-        "Feb": 2,
-        "Mar": 3,
-        "Apr": 4,
+        "Jan": 1,     "January": 1,
+        "Feb": 2,     "February": 2,
+        "Mar": 3,     "March": 3,
+        "Apr": 4,     "April": 4,
         "May": 5,
-        "Jun": 6,
-        "Jul": 7,
-        "Aug": 8,
-        "Sep": 9,
-        "Oct": 10,
-        "Nov": 11,
-        "Dec": 12,
-
-        "January": 1,
-        "February": 2,
-        "March": 3,
-        "April": 4,
-        "May": 5,
-        "June": 6,
-        "July": 7,
-        "August": 8,
-        "September": 9,
-        "October": 10,
-        "November": 11,
-        "December": 12,
+        "Jun": 6,     "June": 6,
+        "Jul": 7,     "July": 7,
+        "Aug": 8,     "August": 8,
+        "Sep": 9,     "September": 9,
+        "Oct": 10,    "October": 10,
+        "Nov": 11,    "November": 11,
+        "Dec": 12,    "December": 12,
     }
 
     def __init__(self, steam_id, bypass_cache=False):
@@ -345,26 +335,11 @@ class SteamPage():
             print(f"{steam_id}: Cached HTML used")
             self.cache_used = True
         else:
-            attempts = 3
-            headers = {
-                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11",
-                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-                "Accept-Charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
-                "Accept-Encoding": "none",
-                "Accept-Language": "en-US,en;q=0.8",
-                "Connection": "keep-alive",
-                "Cookie": "wants_mature_content=1;birthtime=470682001;lastagecheckage=1-0-1985;Steam_Language=english"
-            }
             url = f"https://store.steampowered.com/app/{steam_id}/"
-            for attempt_no in range(attempts):
-                try:
-                    time.sleep(random.randint(1, 3))
-                    request = urllib.request.Request(url, None, headers)
-                    response = urllib.request.urlopen(request)
-                    html = response.read().decode("utf-8")
-                except Exception as error:
-                    if attempt_no == (attempts - 1):
-                        raise error
+            response = requests.get(url, headers=self.headers)
+            if not response:
+                raise RuntimeError(f"Can't access page `{steam_id}`. Status code: {response.status_code}")
+            html = response.text
             match = re.search(r"<span class=\"error\">(.*?)</span>", html)
             if match:
                 raise RuntimeError(f"{match.group(1)} ({steam_id})")
@@ -476,56 +451,65 @@ class SteamPage():
         """Check if the game has been fully released."""
         return self.get_release_status() == "released"
 
-    def get_release_date(self):
-        """Get release date as an pywikibot.WbTime instance."""
-        match = re.search(r"<div class=\"date\">(.*?)</div>", self.html)
-        if match is None:
-            raise RuntimeError("Release date field not found")
-        date_div = match.group(1).strip()
+    def parse_release_date(self, date):
+        """Init pywikibot.WbTime instance."""
+        date = date.strip()
 
         # 10 Dec, 2077
-        match = re.match(r"^(\d{1,2}) ([A-Z][a-z]{2}), (\d{4})$", date_div)
+        match = re.match(r"^(\d{1,2}) ([A-Z][a-z]{2}), (\d{4})$", date)
         if match:
             month_name = match.group(2)
-            if month_name in self.month_names:
-                return pywikibot.WbTime(year=int(match.group(3)), month=self.month_names[month_name], day=int(match.group(1)))
-            else:
+            if month_name not in self.month_names:
                 raise RuntimeError(f"Unknown month abbreviation `{month_name}`")
+            return pywikibot.WbTime(year=int(match.group(3)), month=self.month_names[month_name], day=int(match.group(1)))
 
         # Dec 10, 2077
-        match = re.match(r"^([A-Z][a-z]{2}) (\d{1,2}), (\d{4})$", date_div)
+        match = re.match(r"^([A-Z][a-z]{2}) (\d{1,2}), (\d{4})$", date)
         if match:
             month_name = match.group(1)
-            if month_name in self.month_names:
-                return pywikibot.WbTime(year=int(match.group(3)), month=self.month_names[month_name], day=int(match.group(2)))
-            else:
+            if month_name not in self.month_names:
                 raise RuntimeError(f"Unknown month abbreviation `{month_name}`")
+            return pywikibot.WbTime(year=int(match.group(3)), month=self.month_names[month_name], day=int(match.group(2)))
 
         # December 2077
-        match = re.match(r"^([A-Z][a-z]+) (\d{4})$", date_div)
+        match = re.match(r"^([A-Z][a-z]+) (\d{4})$", date)
         if match:
             month_name = match.group(1)
-            if month_name in self.month_names:
-                return pywikibot.WbTime(year=int(match.group(2)), month=self.month_names[month_name])
-            else:
+            if month_name not in self.month_names:
                 raise RuntimeError(f"Unknown month name `{month_name}`")
+            return pywikibot.WbTime(year=int(match.group(2)), month=self.month_names[month_name])
 
         # Q4 2077
-        match = re.match(r"^Q([1-4]) (\d{4})", date_div)
+        match = re.match(r"^Q([1-4]) (\d{4})", date)
         if match:
             # Wikidata doesn't support quarters of calendar year, so we'll shorten it to year only
             return pywikibot.WbTime(year=int(match.group(2)))
 
         # 2077
-        match = re.match(r"^(\d{4})$", date_div)
+        match = re.match(r"^(\d{4})$", date)
         if match:
             return pywikibot.WbTime(year=int(match.group(1)))
 
         # Coming soon
-        if date_div == "Coming soon":
+        if date == "Coming soon":
             raise RuntimeError("No date specified")
 
-        raise RuntimeError(f"Unknown date format: `{date_div}`")
+        raise RuntimeError(f"Unknown date format: `{date}`")
+
+    def get_release_date(self):
+        """Get release date as an pywikibot.WbTime instance."""
+        match = re.search(r"<div class=\"date\">(.*?)</div>", self.html)
+        if match is None:
+            raise RuntimeError("Release date field not found")
+        return self.parse_release_date(match.group(1))
+
+    def get_early_access_release_date(self):
+        """Get early access release date as an pywikibot.WbTime instance."""
+        # <b>Early Access Release Date:</b> 6 May, 2024<br>
+        match = re.search(r"<b>Early Access Release Date:</b>(.*?)<br>", self.html)
+        if match is None:
+            return None
+        return self.parse_release_date(match.group(1))
 
     def get_release_year(self):
         """Get release year as int, or None."""
@@ -599,7 +583,7 @@ class SteamPage():
 
             checks = re.findall(r"<td class=\"checkcol\">\s*(<span>&#10004;</span>)?\s*</td>\s*", info)
             if len(checks) != 3:
-                raise ValueError("Can't parse language tables")
+                raise RuntimeError("Can't parse language tables")
             qualifiers = [qualifier for qualifier, check in zip(self.languages_qualifiers, checks) if check]
 
             result.append((language_item, qualifiers))
@@ -641,6 +625,16 @@ class ItemProcessor():
         source.setTarget(steam)
         return [source]
 
+    def call_safe(self, function, default_value=None):
+        """
+        Call function. In case of RuntimeError exception, log it and return default value instead.
+        """
+        try:
+            return function()
+        except RuntimeError as error:
+            print(f"{self.steam_page.get_id()}: WARNING: {error}")
+            return default_value
+
     def find_claim(self, prop, value):
         """Return requested prop=value claim as pywikibot.Claim."""
         if prop not in self.item_page.claims:
@@ -664,11 +658,15 @@ class ItemProcessor():
 
     def add_claims(self, prop, values, typename="claim", get_source="default"):
         """If requested property is not set, add prop=value claim for each given value."""
+        if not values:
+            return
         if prop in self.item_page.claims:
             return
         if get_source == "default":
             get_source = self.steam_page.generate_source
         for value in values:
+            if not value:
+                continue
             claim = pywikibot.Claim(repo, prop)
             claim.setTarget(value)
             if get_source:
@@ -682,9 +680,13 @@ class ItemProcessor():
         set properties, if it has new values to add.
         If add_sources is True, also add sources to uncited set values.
         """
+        if not values:
+            return
         if get_source == "default":
             get_source = self.steam_page.generate_source
         for value in values:
+            if not value:
+                continue
             claim = self.find_claim(prop, value)
             if claim:
                 # claim is already set, let's add a source if it's neccessary
@@ -705,6 +707,8 @@ class ItemProcessor():
         Add given values with given qualifiers.
         `values` is a list of the following tuple: (property_value, [list_of_qualifier_values]).
         """
+        if not values:
+            return
         if get_source == "default":
             get_source = self.steam_page.generate_source
         if prop in self.item_page.claims:
@@ -721,41 +725,64 @@ class ItemProcessor():
             self.item_page.addClaim(claim, summary=f"Add {typename} based on Steam page")
             print(f"{self.steam_page.get_id()}: Added {typename}")
 
+    def process_release_date(self, status, date, ea_date):
+        """Import release date from Steam to Wikidata."""
+        prop = "P577"
+
+        if status == "released":
+            if ea_date and ea_date != date:
+                # the game used to be in early access
+                # if no dates are specified, let's import early access release date
+                # otherwise it's too ambiguous for the bot
+                data = (ea_date, [early_access])
+                self.add_claims_with_qualifiers(prop, "P3831", [data], "early access release date")
+                self.add_claims_with_update("P7936", [early_access], "business model")
+
+            # set release date if no full release dates are specified (early access is okay)
+            if prop in self.item_page.claims:
+                for claim in self.item_page.claims[prop]:
+                    is_early_access_date = False
+                    for qualifier, value in claim.qualifiers.items():
+                        if qualifier == "P3831" and len(value) == 1 and value[0].getTarget() == early_access:
+                            is_early_access_date = True
+                            break
+                    if not is_early_access_date:
+                        return
+
+            claim = pywikibot.Claim(repo, prop)
+            claim.setTarget(date)
+            claim.addSources(self.steam_page.generate_source())
+            self.item_page.addClaim(claim, summary="Add release date based on Steam page")
+            print(f"{self.steam_page.get_id()}: Added release date")
+
+        elif status == "early access":
+            # the game is in early access right now to be in early access
+            data = (date, [early_access])
+            self.add_claims_with_qualifiers("P577", "P3831", [data], "early access release date")
+            self.add_claims_with_update("P7936", [early_access], "business model")
+
     def process(self):
         """Import missing information from Steam to Wikidata."""
         status = self.steam_page.get_release_status()
-        try:
-            date = self.steam_page.get_release_date()
-        except RuntimeError as error:
-            print(f"{self.steam_page.get_id()}: WARNING: {error}")
-            date = None
+        date = self.call_safe(self.steam_page.get_release_date)
+        ea_date = self.call_safe(self.steam_page.get_early_access_release_date)
         platforms = self.steam_page.get_platform_items()
         gamemodes = self.steam_page.get_gamemode_items()
-        languages = self.steam_page.get_language_items()
+        languages = self.call_safe(self.steam_page.get_language_items)
         metacritic = self.steam_page.get_metacritic_id()
 
         self.add_steam_qualifier("P400", platforms, "platform")
         self.add_claims_with_update("P437", [digital_distribution], "distribution format", get_source=self.generate_inferred_from_source)
         self.add_claims_with_update("P750", [steam], "distributor")
-        if arguments.publishers:
-            self.add_claims("P123", arguments.publishers, "publisher")
-        if arguments.developers:
-            self.add_claims("P178", arguments.developers, "developer")
-        if arguments.series:
-            self.add_claims("P179", [arguments.series], "series")
-        if arguments.genres:
-            self.add_claims("P136", arguments.genres, "series")
-        if date is not None:
-            if status == "released":
-                self.add_claims("P577", [date], "release date")
-            elif status == "early access":
-                data = (date, [early_access])
-                self.add_claims_with_qualifiers("P577", "P3831", [data], "early access release date")
+        self.add_claims("P123", arguments.publishers, "publisher")
+        self.add_claims("P178", arguments.developers, "developer")
+        self.add_claims("P179", [arguments.series], "series")
+        self.add_claims("P136", arguments.genres, "series")
+        self.process_release_date(status, date, ea_date)
         self.add_claims_with_update("P400", platforms, "platform", add_sources=True)
         self.add_claims_with_update("P404", gamemodes, "game mode", add_sources=True)
         self.add_claims_with_qualifiers("P407", "P518", languages, "language")
-        if metacritic:
-            self.add_claims("P12054", [metacritic], "Metacritic ID")
+        self.add_claims("P12054", [metacritic], "Metacritic ID")
 
         print(f"{self.steam_page.get_id()}: Item {self.item_page.title()} processed")
         if output:
@@ -888,7 +915,7 @@ def cache_pages():
             steam_id = line.strip()
             try:
                 SteamPage(steam_id, bypass_cache=True).cache()
-            except Exception as error:
+            except RuntimeError as error:
                 print(f"{steam_id}: {error}")
 
 def remove_duplicates(id_list):
@@ -896,14 +923,15 @@ def remove_duplicates(id_list):
     ok_items = []
     sparql = SparqlQuery()
     for idx in range(0, len(id_list), 100):
-        ok_items += sparql.select("""
+        codes = " ".join([f"\"{steam_id}\"" for steam_id in id_list[idx:idx+100]])
+        ok_items += sparql.select(f"""
             SELECT ?code WHERE {{
-              VALUES ?code {{ {} }} .
+              VALUES ?code {{ {codes} }} .
               FILTER NOT EXISTS {{
                 ?item wdt:P1733 ?code
               }}
             }}
-        """.format(" ".join([f"\"{steam_id}\"" for steam_id in id_list[idx:idx+100]])))
+        """)
 
     # we can just return [el["code"] for el in ok_items], but we want to keep
     # original order and notify about every duplicate
@@ -918,6 +946,8 @@ def remove_duplicates(id_list):
     return result
 
 def main(input_filename):
+    """Filter duplicates, sort identifiers and process them."""
+
     # Remove duplicates and sort IDs
     q_list = []
     s_list = []
@@ -936,14 +966,14 @@ def main(input_filename):
     for item_id in q_list:
         try:
             ExistingItemProcessor(item_id).process()
-        except Exception as error:
+        except RuntimeError as error:
             print(f"{item_id}: {error}")
 
     # Create new items
     for steam_id in s_list:
         try:
             NewItemProcessor(steam_id).process()
-        except Exception as error:
+        except RuntimeError as error:
             print(f"{steam_id}: {error}")
 
 def parse_item_page_arg(arg_value):

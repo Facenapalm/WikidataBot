@@ -45,7 +45,6 @@ class SteamGridDBSeekerBot(DirectIDSeekerBot):
             with open("keys/steamgriddb.key") as keyfile:
                 self.api_key = keyfile.read().strip()
                 self.headers["Authorization"] = "Bearer " + self.api_key
-                print(self.headers)
         except FileNotFoundError as error:
             raise RuntimeError("SteamGridDB API key unspecified") from error
 

@@ -93,6 +93,8 @@ class BaseIDSeekerBot:
         self.should_set_source = should_set_source
         self.should_set_properties = should_set_properties
 
+        self.output = None
+
     @functools.lru_cache
     def get_property_label(self, property_id: str) -> str:
         """Return property's label (for instance, "Steam application ID" for P1733)."""
@@ -212,6 +214,8 @@ class BaseIDSeekerBot:
                 claim.addSources(self.generate_matched_by_source())
             item.addClaim(claim, summary=f"Add {self.database_label} based on {self.matching_label}")
             print(f"{item.title()}: {self.database_label} set to `{entry_id}`")
+            if self.output:
+                self.output.write(f"{item.title()}\n")
 
             for crosslink, qualifier_value in found_entries:
                 if crosslink == entry_id:
@@ -274,11 +278,15 @@ class BaseIDSeekerBot:
         parser.add_argument("input", help="either a path to the file with the list of IDs of items to process (Qnnn) or a keyword \"all\"")
         parser.add_argument("base", nargs="?", help=f"a property to use to match Wikidata items with database entries; defaults to \"{self.matching_property}\" ({self.matching_label})")
         parser.add_argument("-limit", "-l", type=int, default=0, help="a number of items to process (optional, only works with keyword \"all\")")
+        parser.add_argument("-output", "-o", action="store", dest="output", help="a path to a file to fill with a list of processed items with added identifiers")
         args = parser.parse_args()
 
         try:
             if args.base:
                 self.change_matching_property(args.base)
+
+            if args.output:
+                self.output = open(args.output, "a", encoding="utf-8")
 
             query = f"""
                 SELECT ?item {{

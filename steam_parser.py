@@ -152,7 +152,7 @@ def find_item_for_id(steam_id):
           ?item wdt:P1733 "{steam_id}" .
         }}
     """)
-    if len(result) != 1:
+    if not result or len(result) != 1:
         return None
     match = re.match(r"^https?://www\.wikidata\.org/entity/(Q\d+)$", result[0]["item"])
     if not match:

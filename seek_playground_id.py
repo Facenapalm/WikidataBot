@@ -45,8 +45,13 @@ class PlayGroundSeekerBot(SearchIDSeekerBot):
             "regex": r"^https?:\/\/(?:www\.)?(?:store\.)?epicgames\.com\/(?:store\/)?(?:(?:ar|de|en-US|es-ES|es-MX|fr|it|ja|ko|pl|pt-BR|ru|th|tr|zh-CN|zh-Hant)\/)?p(?:roduct)?\/([a-z\d]+(?:[\-]{0,3}[\_]?[^\sA-Z\W\_]+)*)",
         },
 
+        "playstationstore": {
+            "title": "PlayStation Store concept",
+            "property": "P12332",
+            "regex": r"^https?:\/\/store\.playstation\.com/(?:[a-z\-]+/)?concept/(\d+)"
+        },
+
         "microsoftstore": None, # TODO
-        "playstationstore": None, # TODO
         "ggsel": None,
         "keysforgamers": None,
         "plati": None,

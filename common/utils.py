@@ -20,6 +20,7 @@
 
 """Some useful functions that are used in several bots."""
 
+import re
 import pywikibot
 from datetime import datetime
 from pywikibot import pagegenerators as pg
@@ -43,6 +44,8 @@ def parse_input_source(repo, source, query):
     if source == "all":
         for item in pg.WikidataSPARQLPageGenerator(query, site=repo):
             yield item
+    elif re.match(r'^Q\d+$', source):
+        yield pywikibot.ItemPage(repo, source)
     else:
         with open(source, encoding="utf-8") as listfile:
             for line in listfile:

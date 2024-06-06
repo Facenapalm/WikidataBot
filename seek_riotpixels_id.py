@@ -32,27 +32,27 @@ import requests
 from requests.adapters import HTTPAdapter
 from common.seek_basis import SearchIDSeekerBot
 
-IDS_DATA = [
-    {
-        "regex": r"<a rel=\"nofollow\" class=\"inline\" href=\"https?://store\.steampowered\.com/app/(\d+)(?:/[^\"]*)?\" target=_blank>Страница в Steam</a>",
-        "property": "P1733",
-    },
-    {
-        "regex": r"<a rel=\"nofollow\" class=\"inline\" href=\"https?://www\.gog\.com/(game/[^\"]+)\" target=_blank>Страница в GOG</a>",
-        "property": "P2725",
-    },
-    {
-        "regex": r"<a rel=\"nofollow\" class=\"inline\" href=\"https?://www\.epicgames\.com/store/product/([^\"]+)/\" target=_blank>Страница в магазине Epic Games</a>",
-        "property": "P6278",
-    },
-]
-
 class RiotPixelsSeekerBot(SearchIDSeekerBot):
+    ids_data = [
+        {
+            "regex": r"<a rel=\"nofollow\" class=\"inline\" href=\"https?://store\.steampowered\.com/app/(\d+)(?:/[^\"]*)?\" target=_blank>Страница в Steam</a>",
+            "property": "P1733",
+        },
+        {
+            "regex": r"<a rel=\"nofollow\" class=\"inline\" href=\"https?://www\.gog\.com/(game/[^\"]+)\" target=_blank>Страница в GOG</a>",
+            "property": "P2725",
+        },
+        {
+            "regex": r"<a rel=\"nofollow\" class=\"inline\" href=\"https?://www\.epicgames\.com/store/product/([^\"]+)/\" target=_blank>Страница в магазине Epic Games</a>",
+            "property": "P6278",
+        },
+    ]
+
     def __init__(self):
         super().__init__(
             database_property="P10393",
             default_matching_property="P1733",
-            allowed_matching_properties=[entry["property"] for entry in IDS_DATA],
+            allowed_matching_properties=[entry["property"] for entry in self.ids_data],
         )
 
         self.session = requests.Session()
@@ -72,7 +72,7 @@ class RiotPixelsSeekerBot(SearchIDSeekerBot):
         html = response.text
         result = {}
 
-        for id_data in IDS_DATA:
+        for id_data in self.ids_data:
             match = re.search(id_data["regex"], html)
             if match:
                 result[id_data["property"]] = match.group(1)

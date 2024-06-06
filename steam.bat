@@ -26,6 +26,7 @@ python seek_riotpixels_id.py temp_steam.txt
 python seek_steamgriddb_id.py temp_steam.txt
 python seek_stopgame_id.py temp_steam.txt
 python seek_tuxdb_id.py temp_steam.txt
+python seek_vgtimes_id.py temp_steam.txt
 python seek_vkplay_id.py temp_steam.txt
 
 del temp_steam.txt

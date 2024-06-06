@@ -48,10 +48,16 @@ class PlayGroundSeekerBot(SearchIDSeekerBot):
         "playstationstore": {
             "title": "PlayStation Store concept",
             "property": "P12332",
-            "regex": r"^https?:\/\/store\.playstation\.com/(?:[a-z\-]+/)?concept/(\d+)"
+            "regex": r"^https?:\/\/store\.playstation\.com/(?:[a-z\-]+/)?concept/(\d+)",
         },
 
-        "microsoftstore": None, # TODO
+        "microsoftstore": {
+            "title": "Microsoft Store",
+            "property": "P5885",
+            "regex": r"https://www\.microsoft\.com/store/productid/([A-Za-z0-9]{12})$",
+            "normalize": lambda x: x.lower(),
+        },
+
         "ggsel": None,
         "keysforgamers": None,
         "plati": None,
@@ -100,11 +106,6 @@ class PlayGroundSeekerBot(SearchIDSeekerBot):
 
             result = {}
 
-            def process_store_link(store_id, regex, property):
-                response = requests.head(f'https://www.playground.ru/shop/redirect/{store_id}', allow_redirects=True)
-                match = re.match(r'', '', response.url)
-                return response.url
-
             for store_name, store_ids in stores.items():
                 if store_name not in self.stores_data:
                     print(f'WARNING: unknown store `{store_name}` for `{entry_id}`')
@@ -113,13 +114,17 @@ class PlayGroundSeekerBot(SearchIDSeekerBot):
                 if store_data is None:
                     continue
                 if len(store_ids) > 1:
+                    # TODO: filter duplicate IDs before checking this
                     print(f'WARNING: several {store_data["title"]} links for `{entry_id}`')
                     continue
                 response = requests.head(f'https://www.playground.ru/shop/redirect/{store_ids[0]}', allow_redirects=True)
                 match = re.search(store_data["regex"], response.url)
                 if not match:
                     continue
-                result[store_data["property"]] = match.group(1)
+                property_value = match.group(1)
+                if "normalize" in store_data:
+                    property_value = store_data["normalize"](property_value)
+                result[store_data["property"]] = property_value
 
             return result
         except RuntimeError as error:

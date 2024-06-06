@@ -32,10 +32,6 @@ import pywikibot
 from common.qualify_basis import QualifyingBot
 
 class ArcadeHistoryQualifyingBot(QualifyingBot):
-    headers = {
-        "User-Agent": "Wikidata qualifying bot",
-    }
-
     def __init__(self):
         super().__init__(
             base_property="P4806",

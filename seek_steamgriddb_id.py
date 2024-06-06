@@ -31,10 +31,6 @@ import requests
 from common.seek_basis import DirectIDSeekerBot
 
 class SteamGridDBSeekerBot(DirectIDSeekerBot):
-    headers = {
-        "User-Agent": "Wikidata connecting bot",
-    }
-
     def __init__(self):
         super().__init__(
             database_property='P12561',

@@ -30,6 +30,10 @@ class QualifyingBot:
     given property.
     """
 
+    headers = {
+        "User-Agent": "Wikidata qualifying bot",
+    }
+
     def __init__(self, base_property, qualifier_property):
         self.repo = pywikibot.Site()
         self.repo.login()

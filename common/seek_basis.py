@@ -39,6 +39,10 @@ class BaseIDSeekerBot:
     DirectIDSeekerBot and SearchIDSeekerBot classes instead.
     """
 
+    headers = {
+        'User-Agent': 'Wikidata connecting bot',
+    }
+
     def __init__(
         self,
         database_property: str,

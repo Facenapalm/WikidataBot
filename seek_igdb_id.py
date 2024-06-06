@@ -30,7 +30,6 @@ from common.igdb_wrapper import IGDB
 from common.seek_basis import DirectIDSeekerBot
 
 class IGDBSeekerBot(DirectIDSeekerBot):
-
     queries = {
         "P1733": [
             # https://store.steampowered.com/app/220

@@ -32,10 +32,6 @@ import pywikibot
 from common.qualify_basis import QualifyingBot
 
 class UVLQualifyingBot(QualifyingBot):
-    headers = {
-        'User-Agent': 'Wikidata connecting bot',
-    }
-
     def __init__(self):
         super().__init__(
             base_property="P7555",

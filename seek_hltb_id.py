@@ -32,10 +32,6 @@ from howlongtobeatpy import HowLongToBeat
 from common.seek_basis import SearchIDSeekerBot
 
 class HLTBSeekerBot(SearchIDSeekerBot):
-    headers = {
-        "User-Agent": "Wikidata connecting bot",
-    }
-
     def __init__(self):
         super().__init__(
             database_property="P2816",

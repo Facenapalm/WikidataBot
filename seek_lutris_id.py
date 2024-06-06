@@ -64,10 +64,6 @@ class LutrisSeekerBot(SearchIDSeekerBot):
         # TODO: GOG DB (for example: https://lutris.net/games/the-chaos-engine/ ) ?
     }
 
-    headers = {
-        "User-Agent": "Wikidata connecting bot",
-    }
-
     def __init__(self):
         super().__init__(
             database_property="P7597",

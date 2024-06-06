@@ -32,10 +32,6 @@ import requests
 from common.seek_basis import DirectIDSeekerBot
 
 class IndieDBSeekerBot(DirectIDSeekerBot):
-    headers = {
-        "User-Agent": "Wikidata connecting bot",
-    }
-
     # Since Indie DB is a subset of Mod DB, we can just check whether Mod DB ID is suitable
     # and copy it into Indie DB ID property.
 

@@ -32,10 +32,6 @@ from time import sleep
 from common.seek_basis import SearchIDSeekerBot
 
 class TuxDBSeekerBot(SearchIDSeekerBot):
-    headers = {
-        "User-Agent": "Wikidata connecting bot",
-    }
-
     def __init__(self):
         super().__init__(
             database_property="P11307",

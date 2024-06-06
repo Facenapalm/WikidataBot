@@ -31,10 +31,6 @@ import re
 from common.seek_basis import SearchIDSeekerBot
 
 class VKPlaySeekerBot(SearchIDSeekerBot):
-    headers = {
-        "User-Agent": "Wikidata connecting bot",
-    }
-
     def __init__(self):
         super().__init__(
             database_property="P9697",

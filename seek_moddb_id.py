@@ -33,10 +33,6 @@ import pywikibot
 from common.seek_basis import SearchIDSeekerBot
 
 class ModDBSeekerBot(SearchIDSeekerBot):
-    headers = {
-        "User-Agent": "Wikidata connecting bot",
-    }
-
     def __init__(self):
         super().__init__(
             database_property="P6774",

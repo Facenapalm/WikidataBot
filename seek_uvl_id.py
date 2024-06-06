@@ -31,10 +31,6 @@ import requests
 from common.seek_basis import SearchIDSeekerBot
 
 class UVLSeeker(SearchIDSeekerBot):
-    headers = {
-        'User-Agent': 'Wikidata connecting bot',
-    }
-
     def __init__(self):
         super().__init__(
             database_property='P7555',

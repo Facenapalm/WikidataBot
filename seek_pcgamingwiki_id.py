@@ -29,10 +29,6 @@ import requests
 from common.seek_basis import DirectIDSeekerBot
 
 class PCGamingWikiSeekerBot(DirectIDSeekerBot):
-    headers = {
-        'User-Agent': 'Wikidata connecting bot',
-    }
-
     def __init__(self):
         super().__init__(
             database_property='P6337',

@@ -94,10 +94,6 @@ class RawgSeekerBot(SearchIDSeekerBot):
 
     reverse_matching = { entry["property"]: key for key, entry in stores_data.items() }
 
-    headers = {
-        "User-Agent": "Wikidata connecting bot",
-    }
-
     def __init__(self):
         super().__init__(
             database_property="P9968",

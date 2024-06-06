@@ -32,10 +32,6 @@ from collections import defaultdict
 from common.seek_basis import SearchIDSeekerBot
 
 class PlayGroundSeekerBot(SearchIDSeekerBot):
-    headers = {
-        'User-Agent': 'Wikidata connecting bot',
-    }
-
     stores_data = {
         "steam": {
             "title": "Steam",

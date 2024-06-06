@@ -32,18 +32,17 @@ To get started, type:
 """
 
 from common.seek_basis import DirectIDSeekerBot
-from seek_lutris_id import LutrisSeekerBot
+from seek_lutris_id import LutrisBot
 
-class LutrisSeekerBotLite(DirectIDSeekerBot):
+class LutrisSeekerBotLite(LutrisBot, DirectIDSeekerBot):
     def __init__(self):
         super().__init__(
             database_property='P7597',
             default_matching_property='P5794',
         )
-        self.seeker = LutrisSeekerBot()
 
     def seek_database_entry(self):
-        parsed_entry = self.seeker.parse_entry(self.matching_value)
+        parsed_entry = self.parse_entry(self.matching_value)
         if 'P5794' not in parsed_entry:
             raise RuntimeError(f'Lutris entry `{self.matching_value}` have no backlink to IGDB')
         if parsed_entry['P5794'] != self.matching_value:

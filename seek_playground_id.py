@@ -56,7 +56,7 @@ class PlayGroundSeekerBot(SearchIDSeekerBot):
         super().__init__(
             database_property='P10354',
             default_matching_property='P1733',
-            allowed_matching_properties=['P1733', 'P6278'],
+            allowed_matching_properties=[entry["property"] for entry in self.stores_data.values() if entry],
         )
 
     def search(self, query, max_results=None):

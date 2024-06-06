@@ -34,7 +34,7 @@ import requests
 from urllib.parse import unquote
 from common.seek_basis import SearchIDSeekerBot
 
-class LutrisSeekerBot(SearchIDSeekerBot):
+class LutrisBot():
     ids_data = {
         "igdb": {
             "property": "P5794",
@@ -64,25 +64,6 @@ class LutrisSeekerBot(SearchIDSeekerBot):
         # TODO: GOG DB (for example: https://lutris.net/games/the-chaos-engine/ ) ?
     }
 
-    def __init__(self):
-        super().__init__(
-            database_property="P7597",
-            default_matching_property="P1733",
-            allowed_matching_properties=[entry["property"] for entry in self.ids_data.values()],
-        )
-
-    def search(self, query, max_results=None):
-        params = {
-            "q": query,
-            "unpublished-filter": "on"
-        }
-        response = requests.get("https://lutris.net/games", params=params, headers=self.headers)
-        time.sleep(1)
-        if not response:
-            raise RuntimeError(f"can't get search results for query `{query}`. Status code: {response.status_code}")
-
-        return re.findall(r"<div class=[\"']game-preview[\"']>\s+<a href=[\"']/games/([^\"']+)/\"", response.text)
-
     def parse_entry(self, entry_id):
         response = requests.get(f"https://lutris.net/games/{entry_id}", headers=self.headers)
         time.sleep(1)
@@ -104,6 +85,26 @@ class LutrisSeekerBot(SearchIDSeekerBot):
                 else:
                     print(f"WARNING: {data['property']} found, but `{href}` doesn't match a mask")
         return result
+
+class LutrisSeekerBot(LutrisBot, SearchIDSeekerBot):
+    def __init__(self):
+        super().__init__(
+            database_property="P7597",
+            default_matching_property="P1733",
+            allowed_matching_properties=[entry["property"] for entry in self.ids_data.values()],
+        )
+
+    def search(self, query, max_results=None):
+        params = {
+            "q": query,
+            "unpublished-filter": "on"
+        }
+        response = requests.get("https://lutris.net/games", params=params, headers=self.headers)
+        time.sleep(1)
+        if not response:
+            raise RuntimeError(f"can't get search results for query `{query}`. Status code: {response.status_code}")
+
+        return re.findall(r"<div class=[\"']game-preview[\"']>\s+<a href=[\"']/games/([^\"']+)/\"", response.text)
 
 if __name__ == "__main__":
     LutrisSeekerBot().run()

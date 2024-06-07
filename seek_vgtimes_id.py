@@ -37,6 +37,9 @@ class VGTimesSeekerBot(SearchIDSeekerBot):
             default_matching_property='P1733',
         )
 
+    def preprocess_query(self, query):
+        return query.replace('<', '').replace('>', '')
+
     def search(self, query, max_results=None):
         params = {
             'action': 'search2',
@@ -47,7 +50,10 @@ class VGTimesSeekerBot(SearchIDSeekerBot):
         response = requests.post('https://vgtimes.ru/engine/ajax/search.php', params=params, headers=self.headers)
         if not response:
             raise RuntimeError(f"can't get search results for query `{query}`. Status code: {response.status_code}")
-        html = response.json()['results']['games']
+        json = response.json()
+        if 'results' not in json or 'games' not in json['results']:
+            return
+        html = json['results']['games']
         if not html:
             return []
         result = re.findall(r'<a href="/games/([^"]+)/" class="game_click">', html)

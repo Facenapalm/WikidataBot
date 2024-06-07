@@ -159,6 +159,14 @@ def find_item_for_id(steam_id):
         return None
     return pywikibot.ItemPage(repo, match.group(1))
 
+def extract_steam_id(url):
+    """Extract Steam application ID from url."""
+    match = re.match(r"https?://store\.steampowered\.com/app/(\d+)/?", url)
+    if match:
+        steam_id = match.group(1)
+    else:
+        steam_id = url.strip()
+    return steam_id
 
 
 class SteamPage():
@@ -321,12 +329,7 @@ class SteamPage():
     }
 
     def __init__(self, steam_id, bypass_cache=False):
-        match = re.match(r"https://store\.steampowered\.com/app/(\d+)/?", steam_id)
-        if match:
-            steam_id = match.group(1)
-        else:
-            steam_id = steam_id.strip()
-
+        steam_id = extract_steam_id(steam_id)
         filename = f"steam_cache/{steam_id}"
         if os.path.isfile(filename) and not bypass_cache:
             with open(filename, encoding="utf-8") as cache_page:
@@ -339,6 +342,8 @@ class SteamPage():
             response = requests.get(url, headers=self.headers)
             if not response:
                 raise RuntimeError(f"Can't access page `{steam_id}`. Status code: {response.status_code}")
+            if extract_steam_id(response.url) != steam_id:
+                raise RuntimeError(f"Redirected to the different page ({steam_id})")
             html = response.text
             match = re.search(r"<span class=\"error\">(.*?)</span>", html)
             if match:

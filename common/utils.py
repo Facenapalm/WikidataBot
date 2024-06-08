@@ -34,6 +34,25 @@ def get_current_wbtime():
     timestamp = datetime.utcnow()
     return pywikibot.WbTime(year=timestamp.year, month=timestamp.month, day=timestamp.day)
 
+def get_best_value(item, prop):
+    """
+    Find the best claim for given property and return its value.
+    Prefer set values over None, then preferred claims over normal.
+    If there is no such values, return None.
+    """
+    if item is None or prop not in item.claims:
+        return None
+
+    result = None
+    for claim in item.claims[prop]:
+        if claim.rank == 'preferred':
+            value = claim.getTarget()
+            if value is not None:
+                return value
+        if result is None and claim.rank == 'normal':
+            result = claim.getTarget()
+    return result
+
 def parse_input_source(repo, source, query):
     """
     If source equals "all", make a SPARQL query passed as a third parameter. Otherwise treat it as

@@ -66,7 +66,7 @@ class QualifyingBot:
             except NotImplementedError as error:
                 raise error
             except RuntimeError as error:
-                print(f"{base_value}: {error}")
+                print(f"{base_value}: {error} ({item.title()})")
 
     def run(self):
         """Parse command line arguments and process items accordingly."""

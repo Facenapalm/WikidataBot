@@ -91,6 +91,23 @@ def get_niwa_endpoint(identifier):
     wiki, pagename = identifier.split(':', maxsplit=1)
     return (mapping.get(wiki), pagename)
 
+def get_weird_gloop_endpoint(identifier):
+    wiki, pagename = identifier.split(':', maxsplit=1)
+    if wiki in { 'mcw', 'enmcw' }:
+        return ( 'https://minecraft.wiki/api.php', pagename )
+    elif wiki in { 'enmcw', 'demcw', 'esmcw', 'frmcw', 'jamcw', 'komcw', 'lzhmcw', 'ptmcw', 'rumcw', 'thmcw', 'ukmcw', 'zhmcw' }:
+        return ( f'https://{wiki[:-3]}.minecraft.wiki/api.php', pagename )
+    elif wiki == 'rsw':
+        return ( 'https://runescape.wiki/api.php', pagename )
+    elif wiki == 'ptrsw':
+        return ( 'https://pt.runescape.wiki/api.php', pagename )
+    elif wiki == 'classicrsw':
+        return ( 'https://classic.runescape.wiki/api.php', pagename )
+    elif wiki == 'osrsw':
+        return ( 'https://oldschool.runescape.wiki/api.php', pagename )
+    else:
+        return ( 'https://meta.weirdgloop.org/api.php', identifier )
+
 def get_wiki_gg_endpoint(identifier):
     wiki, pagename = identifier.split(':', maxsplit=1)
 
@@ -109,7 +126,7 @@ class MediaWikiQualifyingBot(QualifyingBot):
         'P10918': get_liquipedia_endpoint,
         'P11988': get_wiki_gg_endpoint,
         'P12253': get_niwa_endpoint,
-        # 'P12473': get_weird_gloop_endpoint, # TODO
+        'P12473': get_weird_gloop_endpoint,
     }
 
     def lookup_endpoint(self, base_property):

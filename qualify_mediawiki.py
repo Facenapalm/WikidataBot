@@ -229,7 +229,10 @@ class MediaWikiQualifyingBot(QualifyingBot):
         response = requests.get(endpoint, params=params, headers=self.headers)
         if not response:
             raise RuntimeError(f"can't get info ({response.status_code})")
-        pageinfo = list(response.json()['query']['pages'].values())[0]
+        query = response.json()['query']
+        if 'pages' not in query:
+            raise RuntimeError(f"page `{base_value}` does not exist")
+        pageinfo = list(query['pages'].values())[0]
         if 'pageid' not in pageinfo:
             raise RuntimeError(f"page `{base_value}` does not exist")
         return [str(pageinfo['pageid'])]

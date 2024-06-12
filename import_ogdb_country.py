@@ -29,16 +29,17 @@ See also:
 import re
 import requests
 import pywikibot
-from argparse import ArgumentParser
-from common.utils import get_current_wbtime, parse_input_source
+from common.import_basis import DataImporterBot
 
-class OGDBBot():
+class OGDBBot(DataImporterBot):
     def __init__(self):
-        self.repo = pywikibot.Site()
-        self.repo.login()
+        super().__init__(
+            prop='P7564',
+            description='Add Country of origin (P495) based on OGDB ID (P7564)',
+            query_constraints=['FILTER NOT EXISTS { ?item p:P495 [] }']
+        )
 
-        get_item = lambda x: pywikibot.ItemPage(self.repo, x)
-        self.ogdb_item = get_item("Q60315954")
+        def get_item(x): return pywikibot.ItemPage(self.repo, x)
         self.country_items = {
             "Kanada": get_item("Q16"),
             "Japan": get_item("Q17"),
@@ -154,7 +155,7 @@ class OGDBBot():
             "Sri Lanka": get_item("Q37024"),
         }
 
-    def get_countries(self, ogdb_id):
+    def parse_entry(self, ogdb_id):
         headers = {
             "User-Agent": "Wikidata bot"
         }
@@ -182,54 +183,7 @@ class OGDBBot():
                 raise RuntimeError(f"unknown country `{country_name}`")
             result.append(self.country_items[country_name])
 
-        return result
-
-    def process_item(self, item):
-        try:
-            if "P495" in item.claims:
-                raise RuntimeError("country of origin already set")
-            if "P7564" not in item.claims:
-                raise RuntimeError("OGDB ID not found")
-            if len(item.claims["P7564"]) > 1:
-                raise RuntimeError("several OGDB IDs found")
-            ogdb_id = item.claims["P7564"][0].getTarget()
-
-            for country in self.get_countries(ogdb_id):
-                claim = pywikibot.Claim(self.repo, "P495")
-                claim.setTarget(country)
-
-                statedin = pywikibot.Claim(self.repo, "P248")
-                statedin.setTarget(self.ogdb_item)
-                source_id = pywikibot.Claim(self.repo, "P7564")
-                source_id.setTarget(ogdb_id)
-                retrieved = pywikibot.Claim(self.repo, "P813")
-                retrieved.setTarget(get_current_wbtime())
-                claim.addSources([statedin, source_id, retrieved], summary="Adding OGDB as a source.")
-
-                item.addClaim(claim, summary="Add country of origin based on OGDB database.")
-
-                if "en" in country.labels:
-                    country_label = country.labels["en"]
-                else:
-                    country_label = country.title()
-                print(f"{item.title()}: added country `{country_label}`")
-        except RuntimeError as error:
-            print(f"{item.title()}: {error}")
-
-    def run(self):
-        parser = ArgumentParser(description="Add Country of origin (P495) based on OGDB ID (P7564).")
-        parser.add_argument("input", nargs="?", default="all", help="either a path to the file with the list of IDs of items to process (Qnnn) or a keyword \"all\"; treated as \"all\" by default")
-        args = parser.parse_args()
-
-        query = """
-            SELECT ?item {
-                ?item p:P7564 [] .
-                FILTER NOT EXISTS { ?item p:P495 [] }
-            }
-        """
-
-        for item in parse_input_source(self.repo, args.input, query):
-            self.process_item(item)
+        return { 'P495': result }
 
 if __name__ == "__main__":
     OGDBBot().run()

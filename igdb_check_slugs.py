@@ -87,7 +87,7 @@ class IGDBMaintainingBot():
         print(f"{item_id}: `{old_slug}` -> `{new_slug}`")
 
     def run(self):
-        parser = ArgumentParser(description="Process changed and deprecate withdrawn IGDB slugs" \
+        parser = ArgumentParser(description="Process changed and deprecate withdrawn IGDB slugs " \
             "(P5794) based on IGDB numeric ID (P9043) qualifier. Script checks all set IGDB slugs " \
             "by using SPARQL query, no arguments required.")
         args = parser.parse_args()

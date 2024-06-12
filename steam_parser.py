@@ -49,6 +49,8 @@ from datetime import datetime
 import pywikibot
 from pywikibot.data.sparql import SparqlQuery
 
+from common.utils import get_only_value
+
 title_replacements = [
     (r"&quot;", "\""),
     (r"&reg;|®", ""),
@@ -839,19 +841,9 @@ class ExistingItemProcessor(ItemProcessor):
 
     def __init__(self, item_id):
         item = pywikibot.ItemPage(repo, item_id)
-
         if not self.check_instance_of(item):
             raise RuntimeError("Item is not an instance of video game, DLC or expansion pack")
-
-        if "P1733" not in item.claims:
-            raise RuntimeError("Steam application ID not found")
-        if len(item.claims["P1733"]) > 1:
-            raise RuntimeError("Several Steam application IDs found")
-        steam_claim = item.claims["P1733"][0]
-        steam_id = steam_claim.getTarget()
-        if steam_id is None:
-            raise RuntimeError("Steam application ID set to unknown value or no value")
-
+        steam_id = get_only_value(item, "P1733", "Steam application ID")
         super().__init__(item, SteamPage(steam_id))
 
 class NewItemProcessor(ItemProcessor):

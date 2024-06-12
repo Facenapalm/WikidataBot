@@ -34,6 +34,28 @@ def get_current_wbtime():
     timestamp = datetime.utcnow()
     return pywikibot.WbTime(year=timestamp.year, month=timestamp.month, day=timestamp.day)
 
+def get_only_value(item, prop, label='claim'):
+    """
+    Assert that given property has only one non-None non-deprecated claim and
+    return such claim.
+    In case of failure, raise RuntimeError.
+    """
+    if item.isRedirectPage():
+        raise RuntimeError("Item is a redirect page")
+    result = None
+    for claim in item.claims.get(prop, []):
+        if claim.rank == 'deprecated':
+            continue
+        value = claim.getTarget()
+        if value is None:
+            continue
+        if result is not None:
+            raise RuntimeError(f"Several {label}s found")
+        result = value
+    if result is None:
+        raise RuntimeError(f"No {label} found")
+    return result
+
 def get_best_value(item, prop):
     """
     Find the best claim for given property and return its value.

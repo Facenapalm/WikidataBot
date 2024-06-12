@@ -22,9 +22,11 @@
 
 import pywikibot
 from argparse import ArgumentParser
+
+from common.basis import BaseWikidataBot
 from common.utils import parse_input_source
 
-class QualifyingBot:
+class QualifyingBot(BaseWikidataBot):
     """
     A skeleton class for a simple bot that adds qualifiers to the claims of
     given property.
@@ -35,10 +37,9 @@ class QualifyingBot:
     }
 
     def __init__(self, base_property, qualifier_property):
-        self.repo = pywikibot.Site()
-        self.repo.login()
+        super().__init__()
         self.base_property = base_property
-        self.base_property_name = self.get_verbose_property_name(base_property)
+        self.base_property_name = self.get_property_label(base_property)
         self.qualifier_property = qualifier_property
 
     def process_item(self, item):
@@ -71,7 +72,7 @@ class QualifyingBot:
     def run(self):
         """Parse command line arguments and process items accordingly."""
         description = "Add {} ({}) qualifier to {} ({}).".format(
-            self.get_verbose_property_name(self.qualifier_property),
+            self.get_property_label(self.qualifier_property),
             self.qualifier_property,
             self.base_property_name,
             self.base_property
@@ -95,20 +96,3 @@ class QualifyingBot:
     def get_qualifier_values(self, base_value):
         """Use the property value to return the list of qualifier values to add."""
         raise NotImplementedError(f"{self.__class__.__name__}.get_qualifier_value() is not implemented")
-
-    # Private methods.
-
-    def get_verbose_property_name(self, prop):
-        """Return property's label (for instance, "Steam application ID" for P1733)."""
-        prop_page = pywikibot.PropertyPage(self.repo, prop)
-        if "en" in prop_page.labels:
-            return prop_page.labels["en"]
-        return prop
-
-    def get_verbose_value(self, value):
-        """If value is a Wikidata Item, return its label; otherwise return raw value."""
-        if not isinstance(value, pywikibot.ItemPage):
-            return value
-        if "en" not in value.labels:
-            return value.labels["en"]
-        return value.title()

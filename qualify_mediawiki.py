@@ -196,7 +196,7 @@ class MediaWikiQualifyingBot(QualifyingBot):
     def process_property(self, prop, input_source):
         self.endpoint = self.lookup_endpoint(prop)
         self.base_property = prop
-        self.base_property_name = self.get_verbose_property_name(prop)
+        self.base_property_name = self.get_property_label(prop)
 
         query = f"""
             SELECT ?item {{

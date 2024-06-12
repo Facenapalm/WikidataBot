@@ -24,9 +24,11 @@ import functools
 import pywikibot
 from typing import Optional, List
 from argparse import ArgumentParser
+
+from common.basis import BaseWikidataBot
 from common.utils import get_first_key, get_current_wbtime, parse_input_source
 
-class BaseIDSeekerBot:
+class BaseIDSeekerBot(BaseWikidataBot):
     """
     Basic skeleton class for a bot that connects Wikidata items with given
     external database based on certain matching value.
@@ -73,8 +75,7 @@ class BaseIDSeekerBot:
         :param should_set_properties: if set to False, bot would ignore additional
             information gathered by parse_item().
         """
-        self.repo = pywikibot.Site()
-        self.repo.login()
+        super().__init__()
 
         self.database_property = database_property
         self.database_label = self.get_property_label(database_property)
@@ -98,26 +99,6 @@ class BaseIDSeekerBot:
         self.should_set_properties = should_set_properties
 
         self.output = None
-
-    @functools.lru_cache
-    def get_property_label(self, property_id: str) -> str:
-        """Return property's label (for instance, "Steam application ID" for P1733)."""
-        prop_page = pywikibot.PropertyPage(self.repo, property_id)
-
-        if "en" not in prop_page.labels:
-            return property_id
-
-        return prop_page.labels["en"]
-
-    @functools.lru_cache
-    def get_property_stated_in_value(self, property_id: str) -> pywikibot.ItemPage:
-        """Return property's "stated in" value (for instance, ItemPage("Q337535") for P1733)."""
-        prop_page = pywikibot.PropertyPage(self.repo, property_id)
-
-        if "P9073" not in prop_page.claims:
-            raise RuntimeError(f"applicable 'stated in' value not set for {property_id}")
-        # TODO: check for None?
-        return prop_page.claims["P9073"][0].getTarget()
 
     def change_matching_property(self, matching_property: str) -> None:
         """Set a property to use to match database entries with Wikidata items."""

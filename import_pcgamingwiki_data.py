@@ -78,9 +78,14 @@ class PCGamingWikiBot(DataImporterBot):
         def get_item(x): return pywikibot.ItemPage(self.repo, x)
         self.modes_map = {
             'singleplayer': get_item('Q208850'),
+            'single-player': get_item('Q208850'),
             'multiplayer': get_item('Q6895044'),
         }
         self.genres_map = {
+            # 'exploration': None, # not a genre?
+            # 'open world': get_item('Q867123'), # not a genre?
+            # 'quick time events': get_item('Q1392636'), # not a genre?
+
             '4x': get_item('Q603555'),
             'action': get_item('Q270948'),
             'adventure': get_item('Q23916'),
@@ -100,7 +105,6 @@ class PCGamingWikiBot(DataImporterBot):
             'driving': get_item('Q116680021'),
             'educational': get_item('Q1140363'),
             'endless runner': get_item('Q57775833'),
-            # 'exploration': None,
             'falling block': get_item('Q10308060'),
             'farming': get_item('Q111149309'),
             'fighting': get_item('Q846224'),
@@ -116,18 +120,16 @@ class PCGamingWikiBot(DataImporterBot):
             'life sim': get_item('Q1199309'),
             'mental training': get_item('Q17232662'),
             'metroidvania': get_item('Q19643088'),
-            # 'mini-games': get_item('Q1192658'), # create separate item?
+            'mini-games': get_item('Q126598654'),
             'mmo': get_item('Q862490'),
             'mmorpg': get_item('Q175173'),
             'music/rhythm': get_item('Q2632782'), # = Q584105?
                   'rhythm': get_item('Q2632782'),
-            # 'open world': get_item('Q867123'), # not a genre?
-            # 'paddle': None,
+            'paddle': get_item('Q2941225'),
             'party game': get_item('Q7888616'),
             'pinball': get_item('Q3177954'),
             'platform': get_item('Q828322'),
             'puzzle': get_item('Q54767'),
-            # 'quick time events': get_item('Q1392636'), # not a genre?
             'racing': get_item('Q860750'),
             'rail shooter': get_item('Q2127647'),
             'roguelike': get_item('Q1143132'),

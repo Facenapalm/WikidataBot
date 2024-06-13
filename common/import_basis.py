@@ -56,7 +56,6 @@ class DataImporterBot(BaseWikidataBot):
             for prop, values in data.items():
                 label = self.get_property_label(prop)
                 if prop in item.claims:
-                    print(f'{item.title()}: {label} already set')
                     continue
 
                 if not isinstance(values, list):

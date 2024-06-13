@@ -156,10 +156,7 @@ class OGDBBot(DataImporterBot):
         }
 
     def parse_entry(self, ogdb_id):
-        headers = {
-            "User-Agent": "Wikidata bot"
-        }
-        response = requests.get(f"https://ogdb.eu/index.php?section=title&titleid={ogdb_id}")
+        response = requests.get(f"https://ogdb.eu/index.php?section=title&titleid={ogdb_id}", headers=self.headers)
         if not response:
             raise RuntimeError(f"can't download game entry {ogdb_id}")
         html = response.text

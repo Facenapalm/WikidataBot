@@ -152,7 +152,7 @@ class PCGamingWikiBot(DataImporterBot):
             'time management': get_item('Q18822231'),
             'tower defense': get_item('Q1137896'),
             'tps': get_item('Q380266'),
-            # 'tricks': None,
+            'tricks': get_item('Q126652372'),
             'trivia/quiz': get_item('Q60617948'),
             'vehicle combat': get_item('Q2070892'),
             'vehicle simulator': get_item('Q578868'),

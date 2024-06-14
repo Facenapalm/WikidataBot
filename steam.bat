@@ -22,6 +22,7 @@ python seek_adventuregamers_id.py temp_steam.txt
 python seek_cooptimus_id.py temp_steam.txt
 python seek_hltb_id.py temp_steam.txt
 python seek_indiemag_id.py temp_steam.txt
+python seek_isthereanydeal_id.py temp_steam.txt
 python seek_lutris_id.py temp_steam.txt
 python seek_mobygames_id.py temp_steam.txt
 python seek_playground_id.py temp_steam.txt

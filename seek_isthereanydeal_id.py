@@ -1,4 +1,4 @@
-# Copyright (c) 2024 Lewis Hulbert
+# Copyright (c) 2024 Facenapalm
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -19,42 +19,32 @@
 # SOFTWARE.
 
 """
-Add SteamGridDB ID (P12561) based on matching Steam application ID (P1733).
-To get started, type:
-    python seek_pcgamingwiki_id.py -h
+Add IsThereAnyDeal ID (P12570) based on matching Steam application ID (P1733).333333333333
 
-Script requires SteamGridDB API key, place it at ./keys/steamgriddb.key file.
+To get started, type:
+    python seek_isthereanydeal_id.py -h
 """
 
 import re
 import requests
 from common.seek_basis import DirectIDSeekerBot
 
-class SteamGridDBSeekerBot(DirectIDSeekerBot):
+class IsThereAnyDealSeekerBot(DirectIDSeekerBot):
     def __init__(self):
         super().__init__(
-            database_property='P12561',
+            database_property='P12570',
             default_matching_property='P1733',
         )
 
-        try:
-            with open("keys/steamgriddb.key") as keyfile:
-                self.api_key = keyfile.read().strip()
-                self.headers["Authorization"] = "Bearer " + self.api_key
-        except FileNotFoundError as error:
-            raise RuntimeError("SteamGridDB API key unspecified") from error
-
     def seek_database_entry(self):
-        response = requests.get('https://www.steamgriddb.com/api/v2/games/steam/' + self.matching_value, headers=self.headers)
-        if not response:
+        response = requests.head(f'https://isthereanydeal.com/steam/app/{self.matching_value}/', headers=self.headers)
+        if response.status_code != 302 or 'location' not in response.headers:
             raise RuntimeError(f"can't get info for game `{self.matching_value}`. Status code: {response.status_code}")
-        hits = response.json()
-        if not hits["success"]:
-            raise RuntimeError(f"can't get info for game {self.matching_label} `{self.matching_value}`")
-        
-        gameid = str(hits["data"]["id"])
-
-        return (gameid, {})
+        location = response.headers['location']
+        match = re.match(r'^/game/([a-z0-9\-_]+)/info/$', location)
+        if not match:
+            raise RuntimeError(f"location `{location}` doesn't match the regex mask")
+        return (match.group(1), {})
 
 if __name__ == "__main__":
-    SteamGridDBSeekerBot().run()
+    IsThereAnyDealSeekerBot().run()

@@ -26,7 +26,7 @@ from typing import Optional, List
 from argparse import ArgumentParser
 
 from common.basis import BaseWikidataBot
-from common.utils import get_first_key, get_current_wbtime, parse_input_source
+from common.utils import get_first_key, get_current_wbtime, parse_input_source, get_only_value
 
 class BaseIDSeekerBot(BaseWikidataBot):
     """
@@ -307,13 +307,7 @@ class DirectIDSeekerBot(BaseIDSeekerBot):
 
     def parse_item(self, item: pywikibot.ItemPage):
         """Straightforward implementation of BaseIDSeekerBot.parse_item()"""
-        if self.matching_property not in item.claims:
-            raise RuntimeError(f"{self.matching_label} not found in the item")
-        if len(item.claims[self.matching_property]) > 1:
-            raise RuntimeError(f"several {self.matching_label}s found")
-        self.matching_value = item.claims[self.matching_property][0].getTarget()
-        if self.matching_value is None:
-            raise RuntimeError(f"{self.matching_label} is set to no_value or unknown_value")
+        self.matching_value = get_only_value(item, self.matching_property, self.matching_label)
 
         result = self.seek_database_entry()
 
@@ -390,13 +384,7 @@ class SearchIDSeekerBot(BaseIDSeekerBot):
 
     def parse_item(self, item: pywikibot.ItemPage):
         """Implementation of BaseIDSeekerBot.parse_item() using search API."""
-        if self.matching_property not in item.claims:
-            raise RuntimeError(f"{self.matching_label} not found in the item")
-        if len(item.claims[self.matching_property]) > 1:
-            raise RuntimeError(f"several {self.matching_label}s found")
-        self.matching_value = item.claims[self.matching_property][0].getTarget()
-        if self.matching_value is None:
-            raise RuntimeError(f"{self.matching_label} is set to no_value or unknown_value")
+        self.matching_value = get_only_value(item, self.matching_property, self.matching_label)
 
         if "en" in item.labels:
             lang = "en"

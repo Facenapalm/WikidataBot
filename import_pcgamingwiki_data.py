@@ -73,7 +73,10 @@ class PCGamingWikiPage():
 
 class PCGamingWikiBot(DataImporterBot):
     def __init__(self):
-        super().__init__('P6337')
+        super().__init__(
+            prop='P6337',
+            query_constraints=['?item wdt:P31/wdt:P279* wd:Q7889 .'],
+        )
 
         def get_item(x): return pywikibot.ItemPage(self.repo, x)
         self.modes_map = {

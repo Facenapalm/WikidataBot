@@ -85,10 +85,6 @@ class PCGamingWikiBot(DataImporterBot):
             'multiplayer': get_item('Q6895044'),
         }
         self.genres_map = {
-            # 'exploration': None, # not a genre?
-            # 'open world': get_item('Q867123'), # not a genre?
-            # 'quick time events': get_item('Q1392636'), # not a genre?
-
             '4x': get_item('Q603555'),
             'action': get_item('Q270948'),
             'adventure': get_item('Q23916'),
@@ -162,6 +158,10 @@ class PCGamingWikiBot(DataImporterBot):
             'visual novel': get_item('Q689445'),
             'wargame': get_item('Q2454898'),
             'word': get_item('Q15220419'),
+
+            'exploration': None, # get_item('Q33183362'), # not a genre?
+            'open world': None, # get_item('Q867123'), # not a genre?
+            'quick time events': None, # get_item('Q1392636'), # not a genre?
         }
 
     def parse_entry(self, entry_id):
@@ -169,12 +169,19 @@ class PCGamingWikiBot(DataImporterBot):
         page = PCGamingWikiPage(entry_id)
 
         def apply_mapping(prop, mapping, array, label):
-            new_array = [mapping.get(item.lower()) for item in array]
-            if None in new_array:
-                for i, value in enumerate(new_array):
-                    if value is None:
-                        print(f'{entry_id}: {label} `{array[i]}` not in mapping')
-            elif new_array:
+            new_array = []
+            success = True
+
+            for item in array:
+                item = item.lower()
+                if item not in mapping:
+                    print(f'{entry_id}: {label} `{item}` not in mapping')
+                    success = False
+                    continue
+                if mapping[item] is not None:
+                    new_array.append(mapping[item])
+
+            if success:
                 result[prop] = new_array
 
         apply_mapping('P404', self.modes_map, page.get_game_modes(), 'game mode')

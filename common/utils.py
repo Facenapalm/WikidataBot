@@ -22,7 +22,7 @@
 
 import re
 import pywikibot
-from datetime import datetime
+from datetime import datetime, UTC
 from pywikibot import pagegenerators as pg
 
 def get_first_key(dictionary):
@@ -31,7 +31,7 @@ def get_first_key(dictionary):
 
 def get_current_wbtime():
     """Return current UTC time as an pywikibot.WbTime object."""
-    timestamp = datetime.utcnow()
+    timestamp = datetime.now(UTC)
     return pywikibot.WbTime(year=timestamp.year, month=timestamp.month, day=timestamp.day)
 
 def get_only_value(item, prop, label='claim'):

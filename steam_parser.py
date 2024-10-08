@@ -44,7 +44,7 @@ import requests
 import re
 import argparse
 import os.path
-from datetime import datetime
+from datetime import datetime, UTC
 
 import pywikibot
 from pywikibot.data.sparql import SparqlQuery
@@ -352,7 +352,7 @@ class SteamPage():
                 raise RuntimeError(f"{match.group(1)} ({steam_id})")
             if "<title>Welcome to Steam</title>" in html:
                 raise RuntimeError(f"Redirected to the main page ({steam_id})")
-            retrieve_date = datetime.utcnow()
+            retrieve_date = datetime.now(UTC)
             print(f"{steam_id}: HTML downloaded")
             self.cache_used = False
 

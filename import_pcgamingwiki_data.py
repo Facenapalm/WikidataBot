@@ -102,7 +102,7 @@ class PCGamingWikiBot(DataImporterBot):
             'clicker': get_item('Q126394863'),
             'dating': get_item('Q1339223'),
             'driving': get_item('Q116680021'),
-            'educational': get_item('Q1140363'),
+            'educational': get_item('Q1224999'),
             'endless runner': get_item('Q57775833'),
             'falling block': get_item('Q10308060'),
             'farming': get_item('Q111149309'),

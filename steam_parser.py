@@ -72,7 +72,7 @@ vg_descriptions_data = [
     ("en", "video game", "{} video game"),
     ("eo", "videoludo", "videoludo de {}"),
     ("es", "videojuego", "videojuego de {}"),
-    ("fi", "videopeli", "{} videopeli"),
+    ("fi", "videopeli", "videopeli vuodelta {}"),
     ("fr", "jeu vidéo", "jeu vidéo de {}"),
     ("ga", "físchluiche", "físchluiche a foilsíodh sa bhliain {}"),
     ("gl", "videoxogo", "videoxogo de {}"),

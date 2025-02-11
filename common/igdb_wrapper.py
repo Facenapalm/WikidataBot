@@ -38,9 +38,11 @@ class IGDB():
     def authenticate(self):
         """Request access token and initialize IGDB wrapper."""
         with open("keys/igdb-id.key", encoding='ascii') as keyfile:
-            client_id = keyfile.read()
+            # Need to strip extra spaces/linebreaks off the end of this in case
+            # the key file has extra linebreaks or anything.
+            client_id = keyfile.read().strip()
         with open("keys/igdb-secret.key", encoding='ascii') as keyfile:
-            client_secret = keyfile.read()
+            client_secret = keyfile.read().strip()
         access_token = requests.post(f"https://id.twitch.tv/oauth2/token?client_id={client_id}&client_secret={client_secret}&grant_type=client_credentials", timeout=10).json()["access_token"]
         self.wrapper = IGDBWrapper(client_id, access_token)
 

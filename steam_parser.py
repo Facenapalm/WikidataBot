@@ -876,7 +876,7 @@ class NewItemProcessor(ItemProcessor):
         if instance not in descriptions_data:
             raise RuntimeError(f"{instance} items are not supported")
 
-        labels = { data[0] : title for data in descriptions_data[instance] }
+        labels = { 'mul' : title }
         if year:
             descriptions = { data[0]: data[2].format(year) for data in descriptions_data[instance] if data[2] }
         else:

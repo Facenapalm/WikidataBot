@@ -50,6 +50,10 @@ def get_liquipedia_endpoint(identifier):
     wiki, pagename = identifier.split('/', maxsplit=1)
     return (f'https://liquipedia.net/{wiki}/api.php', pagename)
 
+def get_miraheze_endpoint(identifier):
+    wiki, pagename = identifier.split(':', maxsplit=1)
+    return (f'https://{wiki}.miraheze.org/w/api.php', pagename)
+
 def get_niwa_endpoint(identifier):
     mapping = {
         # 'nintendowiki': 'https://niwanetwork.org/',
@@ -122,8 +126,9 @@ def get_wiki_gg_endpoint(identifier):
 class MediaWikiQualifyingBot(QualifyingBot):
     endpoints = {
         'P6262': get_fandom_endpoint,
-        # 'P10668': get_huiji_wiki_endpoint, # 403 forbidden
+        'P10668': get_huiji_wiki_endpoint,
         'P10918': get_liquipedia_endpoint,
+        'P11250': get_miraheze_endpoint,
         'P11988': get_wiki_gg_endpoint,
         'P12253': get_niwa_endpoint,
         'P12473': get_weird_gloop_endpoint,
@@ -149,7 +154,7 @@ class MediaWikiQualifyingBot(QualifyingBot):
             endpoint = get_best_value(property_item, 'P6269')
 
         if endpoint is None:
-            raise RuntimeError(f"Unsupported matching property `{base_property}`")
+            raise RuntimeError(f"Unsupported property `{base_property}`")
         return endpoint
 
     def get_mediaiki_properties(self):

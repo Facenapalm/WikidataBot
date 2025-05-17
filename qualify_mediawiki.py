@@ -41,6 +41,33 @@ def get_fandom_endpoint(identifier):
     wiki, pagename = identifier.split(':', maxsplit=1)
     return (f'https://{wiki}.fandom.com/api.php', pagename)
 
+def get_gaming_wiki_network_endpoint(identifier):
+    mapping = {
+        'arthurwiki': 'https://arthurwiki.com/w/api.php',
+        'conkerwiki': 'https://conkerwiki.com/w/api.php',
+        'crashbandicootwiki': 'https://crashbandicootwiki.com/w/api.php',
+        'dacw': 'https://awakening.wiki/api.php',
+        'finalfantasy': 'https://finalfantasywiki.com/w/api.php',
+        'galaxypedia': 'https://wiki.galaxy.casa/w/api.php',
+        'hkwiki': 'https://hollowknight.wiki/mw/api.php',
+        'kingdomhearts': 'https://www.khdatabase.com/api.php',
+        'mamiya': 'https://mamiyawiki.com/api.php',
+        'mana': 'https://wikiofmana.com/w/api.php',
+        'medievil': 'https://medievil.wiki/api.php',
+        'rarewiki': 'https://rarewiki.com/w/api.php',
+        'raywiki': 'https://raymanpc.com/wiki/script-en/api.php',
+        'speedrunwiki': 'https://www.speedrunwiki.com/w/api.php',
+        'spongebob': 'https://spongebobwiki.org/w/api.php',
+        # 'spyro': None, # DEAD ?
+        'squareenix': 'https://wiki.seiwanetwork.org/w/api.php',
+        'stowiki': 'https://stowiki.net/w/api.php',
+        # 'tcoaal': None, # DEAD ?
+        'triforce': 'https://triforcewiki.com/w/api.php',
+        'wimpykid': 'https://wimpykidwiki.com/w/api.php',
+    }
+    wiki, pagename = identifier.split(':', maxsplit=1)
+    return (mapping.get(wiki), pagename)
+
 def get_huiji_wiki_endpoint(identifier):
     wiki, pagename = identifier.split(':', maxsplit=1)
     return (f'https://{wiki}.huijiwiki.com/w/api.php', pagename)
@@ -53,6 +80,14 @@ def get_liquipedia_endpoint(identifier):
 def get_miraheze_endpoint(identifier):
     wiki, pagename = identifier.split(':', maxsplit=1)
     return (f'https://{wiki}.miraheze.org/w/api.php', pagename)
+
+def get_moegirl_endpoint(identifier):
+    if identifier.startswith('en') or identifier.startswith('ja'):
+        wiki, pagename = identifier.split(':', maxsplit=1)
+    else:
+        wiki = 'zh'
+        pagename = identifier
+    return (f'https://{wiki}.moegirl.org.cn/api.php', pagename)
 
 def get_niwa_endpoint(identifier):
     mapping = {
@@ -95,6 +130,10 @@ def get_niwa_endpoint(identifier):
     wiki, pagename = identifier.split(':', maxsplit=1)
     return (mapping.get(wiki), pagename)
 
+def get_paradox_wiki_endpoint(identifier):
+    wiki, pagename = identifier.split(':', maxsplit=1)
+    return (f'https://{wiki}.paradoxwikis.com/api.php', pagename)
+
 def get_weird_gloop_endpoint(identifier):
     wiki, pagename = identifier.split(':', maxsplit=1)
     if wiki in { 'mcw', 'enmcw' }:
@@ -125,11 +164,14 @@ def get_wiki_gg_endpoint(identifier):
 
 class MediaWikiQualifyingBot(QualifyingBot):
     endpoints = {
+        'P5737': get_moegirl_endpoint,
         'P6262': get_fandom_endpoint,
         'P10668': get_huiji_wiki_endpoint,
         'P10918': get_liquipedia_endpoint,
         'P11250': get_miraheze_endpoint,
         'P11988': get_wiki_gg_endpoint,
+        'P12143': get_gaming_wiki_network_endpoint,
+        # 'P12189': get_paradox_wiki_endpoint, # 403 Forbidden
         'P12253': get_niwa_endpoint,
         'P12473': get_weird_gloop_endpoint,
     }

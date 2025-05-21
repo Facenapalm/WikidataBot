@@ -38,10 +38,14 @@ from common.utils import parse_input_source, get_best_value
 from common.qualify_basis import QualifyingBot
 
 def get_fandom_endpoint(identifier):
+    if ':' not in identifier:
+        return (None, identifier)
     wiki, pagename = identifier.split(':', maxsplit=1)
     return (f'https://{wiki}.fandom.com/api.php', pagename)
 
 def get_gaming_wiki_network_endpoint(identifier):
+    if ':' not in identifier:
+        return (None, identifier)
     mapping = {
         'arthurwiki': 'https://arthurwiki.com/w/api.php',
         'conkerwiki': 'https://conkerwiki.com/w/api.php',
@@ -69,20 +73,26 @@ def get_gaming_wiki_network_endpoint(identifier):
     return (mapping.get(wiki), pagename)
 
 def get_huiji_wiki_endpoint(identifier):
+    if ':' not in identifier:
+        return (None, identifier)
     wiki, pagename = identifier.split(':', maxsplit=1)
     return (f'https://{wiki}.huijiwiki.com/w/api.php', pagename)
 
 def get_liquipedia_endpoint(identifier):
+    if '/' not in identifier:
+        return (None, identifier)
     time.sleep(2)
     wiki, pagename = identifier.split('/', maxsplit=1)
     return (f'https://liquipedia.net/{wiki}/api.php', pagename)
 
 def get_miraheze_endpoint(identifier):
+    if ':' not in identifier:
+        return (None, identifier)
     wiki, pagename = identifier.split(':', maxsplit=1)
     return (f'https://{wiki}.miraheze.org/w/api.php', pagename)
 
 def get_moegirl_endpoint(identifier):
-    if identifier.startswith('en') or identifier.startswith('ja'):
+    if identifier.startswith('en:') or identifier.startswith('ja:'):
         wiki, pagename = identifier.split(':', maxsplit=1)
     else:
         wiki = 'zh'
@@ -90,6 +100,8 @@ def get_moegirl_endpoint(identifier):
     return (f'https://{wiki}.moegirl.org.cn/api.php', pagename)
 
 def get_niwa_endpoint(identifier):
+    if ':' not in identifier:
+        return (None, identifier)
     mapping = {
         # 'nintendowiki': 'https://niwanetwork.org/',
 
@@ -131,10 +143,14 @@ def get_niwa_endpoint(identifier):
     return (mapping.get(wiki), pagename)
 
 def get_paradox_wiki_endpoint(identifier):
+    if ':' not in identifier:
+        return (None, identifier)
     wiki, pagename = identifier.split(':', maxsplit=1)
     return (f'https://{wiki}.paradoxwikis.com/api.php', pagename)
 
 def get_weird_gloop_endpoint(identifier):
+    if ':' not in identifier:
+        return (None, identifier)
     wiki, pagename = identifier.split(':', maxsplit=1)
     if wiki in { 'mcw', 'enmcw' }:
         return ( 'https://minecraft.wiki/api.php', pagename )
@@ -152,6 +168,8 @@ def get_weird_gloop_endpoint(identifier):
         return ( 'https://meta.weirdgloop.org/api.php', identifier )
 
 def get_wiki_gg_endpoint(identifier):
+    if ':' not in identifier:
+        return (None, identifier)
     wiki, pagename = identifier.split(':', maxsplit=1)
 
     langmatch = re.match(r'^([a-z]{2}/|zh-[a-z]{2,4}/)(.+)$', pagename)

@@ -294,7 +294,10 @@ class MediaWikiQualifyingBot(QualifyingBot):
         response = requests.get(endpoint, params=params, headers=self.headers)
         if not response:
             raise RuntimeError(f"can't get info ({response.status_code})")
-        json = response.json()
+        try:
+            json = response.json()
+        except ValueError as error:
+            raise RuntimeError(f"bad json ({error})")
         if 'error' in json:
             error_code = json['error'].get('code', 'unknown')
             raise RuntimeError(f"API error while fetching `{base_value}` info ({error_code})")

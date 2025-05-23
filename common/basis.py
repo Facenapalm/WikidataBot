@@ -44,7 +44,7 @@ class BaseWikidataBot:
 
     def run(self) -> None:
         """Do nothing."""
-        raise NotImplementedError('Direct attempt to run a dummy bot.')
+        raise NotImplementedError('Attempt to run a dummy bot directly.')
 
     @functools.lru_cache
     def get_verbose_value(self, value):

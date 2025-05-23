@@ -71,8 +71,50 @@ class HeaderMaintainerBot(BaseWikidataBot):
         FILTER( LANG(?label) = "mul" )
       }
     }
-    LIMIT 5
     """
+
+    supported_instances = {
+        'Q7397', # program
+        'Q166142', # application
+        'Q620615', # mobile app
+        'Q1121542', # mobile game
+        'Q56273712', # source-available software
+        'Q1395577', # fangame
+        'Q2568454', # reissue
+        'Q178285', # freeware
+        'Q116634', # online game
+
+        'Q7889', # video game
+        'Q848991', # browser game
+        'Q865493', # video game mod
+        'Q1755420', # game demo
+        'Q4393107', # video game remake
+        'Q61475894', # cancelled/unreleased video game
+        'Q65963104', # video game remaster
+        'Q21125433', # free or open-source video game
+        'Q60997816', # video game edition
+        'Q61456428', # total conversion mod
+        'Q64170203', # video game project
+        'Q64170508', # unfinished or abandoned video game project
+        'Q111223304', # video game reboot
+
+        'Q112144412', # esports discipline
+    }
+
+    def check_instance_of(self, item):
+        """
+        Check if the item is an instance of video game.
+        If not, throw RuntimeError.
+        """
+        if 'P31' not in item.claims:
+            raise RuntimeError('instance of is not set')
+
+        for claim in item.claims['P31']:
+            instance = claim.getTarget()
+            if instance is None:
+                continue
+            if instance.getID() not in self.supported_instances:
+                raise RuntimeError(f'unsupported instance of (`{instance.getID()}`)')
 
     def process_labels(self, item):
         try:
@@ -131,8 +173,12 @@ class HeaderMaintainerBot(BaseWikidataBot):
 
     def run(self):
         for item in pg.WikidataSPARQLPageGenerator(self.query, site=self.repo):
-            self.process_item(item)
-            print(f"{item.title()} processed")
+            try:
+                self.check_instance_of(item)
+                self.process_item(item)
+                print(f'{item.title()} processed')
+            except RuntimeError as error:
+                print(f'{item.title()}: {error}')
 
 if __name__ == '__main__':
     HeaderMaintainerBot().run()

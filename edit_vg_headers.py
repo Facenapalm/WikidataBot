@@ -63,6 +63,8 @@ def get_release_year(item):
     return result
 
 class HeaderMaintainerBot(BaseWikidataBot):
+    summary = 'maintain headers: set mul label, clear duplicating labels, add missing descriptions'
+
     query = """
     SELECT ?item WHERE {
       ?item wdt:P31 wd:Q7889 .
@@ -166,18 +168,28 @@ class HeaderMaintainerBot(BaseWikidataBot):
     def process_item(self, item):
         labels = self.process_labels(item)
         descriptions = self.process_descriptions(item)
-        item.editEntity(
-            { 'labels': labels, 'descriptions': descriptions },
-            summary='maintain headers: set mul label, clear duplicating labels, add missing descriptions'
-        )
+        try:
+            item.editEntity(
+                { 'labels': labels, 'descriptions': descriptions },
+                summary=self.summary
+            )
+            return bool(labels) or bool(descriptions)
+        except pywikibot.exceptions.OtherPageSaveError:
+            # wikibase-validator-label-with-description-conflict
+            # Let's try to only edit labels
+            item.editEntity(
+                { 'labels': labels },
+                summary=self.summary
+            )
+            return bool(labels)
 
     def run(self):
         for item in pg.WikidataSPARQLPageGenerator(self.query, site=self.repo):
             try:
                 self.check_instance_of(item)
-                self.process_item(item)
-                print(f'{item.title()} processed')
-            except RuntimeError as error:
+                if self.process_item(item):
+                    print(f'{item.title()} processed')
+            except (RuntimeError, pywikibot.exceptions.OtherPageSaveError) as error:
                 print(f'{item.title()}: {error}')
 
 if __name__ == '__main__':

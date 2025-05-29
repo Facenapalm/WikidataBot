@@ -41,6 +41,18 @@ def get_fandom_endpoint(identifier):
     if ':' not in identifier:
         return (None, identifier)
     wiki, pagename = identifier.split(':', maxsplit=1)
+
+    supported_languages = {
+        'ar', 'bg', 'ca', 'cs', 'da', 'de', 'el', 'en', 'es', 'et', 'fa', 'fi',
+        'fr', 'he', 'hi', 'hr', 'hu', 'id', 'it', 'ja', 'ko', 'ms', 'nl', 'no',
+        'pl', 'pt', 'pt-br',    'ro', 'ru', 'sl', 'sr', 'sv', 'th', 'tl', 'tr',
+        'uk', 'vi', 'zh', 'zh-hk', 'zh-tw'
+    }
+    match = re.match(r'^([a-z\-]+):(.*)$', pagename)
+    if match and match.group(1) in supported_languages:
+        lang, pagename = match.groups()
+        return (f'https://{wiki}.fandom.com/{lang}/api.php', pagename)
+
     return (f'https://{wiki}.fandom.com/api.php', pagename)
 
 def get_gaming_wiki_network_endpoint(identifier):
@@ -291,7 +303,10 @@ class MediaWikiQualifyingBot(QualifyingBot):
             'titles': base_value,
             'format': 'json',
         }
-        response = requests.get(endpoint, params=params, headers=self.headers)
+        try:
+            response = requests.get(endpoint, params=params, headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         if not response:
             raise RuntimeError(f"can't get info ({response.status_code})")
         try:

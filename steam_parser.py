@@ -263,7 +263,7 @@ class SteamPage():
         if os.path.isfile(filename) and not bypass_cache:
             with open(filename, encoding="utf-8") as cache_page:
                 html = cache_page.read()
-            retrieve_date = datetime.utcfromtimestamp(os.path.getmtime(filename))
+            retrieve_date = datetime.fromtimestamp(os.path.getmtime(filename), UTC)
             print(f"{steam_id}: Cached HTML used")
             self.cache_used = True
         else:
@@ -342,7 +342,7 @@ class SteamPage():
 
     def get_title(self):
         """Get title as a string, for instance, 'Half-Life 2'."""
-        match = re.search(r"<div id=\"appHubAppName\" class=\"apphub_AppName\">(.*?)</div>", self.html)
+        match = re.search(r"<div id=\"appHubAppName\"[^>]+?>(.*?)</div>", self.html)
         if match:
             title = match.group(1)
             for (matcher, replacer) in title_replacements:

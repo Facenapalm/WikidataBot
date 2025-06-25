@@ -60,10 +60,16 @@ class QualifyingBot(BaseWikidataBot):
                     raise RuntimeError("can't get qualifier values")
 
                 for qualifier_value in qualifier_values:
-                    qualifier = pywikibot.Claim(self.repo, self.qualifier_property)
-                    qualifier.setTarget(qualifier_value)
-                    claim.addQualifier(qualifier, summary=f"Add qualifier to {self.base_property_name} `{base_value}`")
-                    print(f"{base_value}: qualifier set to `{self.get_verbose_value(qualifier_value)}`")
+                    if qualifier_value is None:
+                        qualifier = pywikibot.Claim(self.repo, self.qualifier_property)
+                        qualifier.setSnakType('novalue')
+                        claim.addQualifier(qualifier, summary=f"Add qualifier to {self.base_property_name} `{base_value}`")
+                        print(f"{base_value}: qualifier set to None")
+                    else:
+                        qualifier = pywikibot.Claim(self.repo, self.qualifier_property)
+                        qualifier.setTarget(qualifier_value)
+                        claim.addQualifier(qualifier, summary=f"Add qualifier to {self.base_property_name} `{base_value}`")
+                        print(f"{base_value}: qualifier set to `{self.get_verbose_value(qualifier_value)}`")
             except NotImplementedError as error:
                 raise error
             except RuntimeError as error:

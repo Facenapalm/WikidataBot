@@ -58,7 +58,7 @@ class GameTDBQualifyingBot(QualifyingBot):
         'xbox_360': 'Q48263',
 
         'atari_jaguar': 'Q650601',
-        'meta_quest': None,
+        # 'meta_quest': None,
         'n_gage': 'Q336434',
         'sega_genesis_32x': 'Q1063978',
         'snes': 'Q183259',
@@ -75,10 +75,13 @@ class GameTDBQualifyingBot(QualifyingBot):
         if '/' not in base_value:
             raise RuntimeError("can't extract platform from ID")
         platform, _ = base_value.split('/', maxsplit=1)
-        platform_qid = self.platforms_map.get(platform.lower())
-        if platform_qid is None:
+        if platform not in self.platforms_map:
             raise RuntimeError('unknown platform')
-        return [pywikibot.ItemPage(self.repo, platform_qid)]
+        platform_qid = self.platforms_map[platform.lower()]
+        if platform_qid:
+            return [pywikibot.ItemPage(self.repo, platform_qid)]
+        else:
+            return [None]
 
 if __name__ == '__main__':
     GameTDBQualifyingBot().run()

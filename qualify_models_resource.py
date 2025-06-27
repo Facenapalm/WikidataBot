@@ -39,7 +39,7 @@ class GameTDBQualifyingBot(QualifyingBot):
         'ds_dsi': 'Q170323',
         'game_boy_advance': 'Q188642',
         'gamecube': 'Q182172',
-        'mobile': 'Q193828',
+        'mobile': 'Q17517',
         'ms_dos': 'Q47604',
         'nintendo_64': 'Q184839',
         'nintendo_switch': 'Q19610114',
@@ -58,7 +58,7 @@ class GameTDBQualifyingBot(QualifyingBot):
         'xbox_360': 'Q48263',
 
         'atari_jaguar': 'Q650601',
-        # 'meta_quest': None,
+        'meta_quest': 'Q135095780',
         'n_gage': 'Q336434',
         'sega_genesis_32x': 'Q1063978',
         'snes': 'Q183259',

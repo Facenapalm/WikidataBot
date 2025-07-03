@@ -771,6 +771,8 @@ class ExistingItemProcessor(ItemProcessor):
 
     def __init__(self, item_id):
         item = pywikibot.ItemPage(repo, item_id)
+        if item.isRedirectPage():
+            raise RuntimeError(f"item is a redirect page")
         if not self.check_instance_of(item):
             raise RuntimeError("Item is not an instance of video game, DLC or expansion pack")
         steam_id = get_only_value(item, "P1733", "Steam application ID")

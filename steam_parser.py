@@ -664,6 +664,9 @@ class ItemProcessor():
         prop = "P577"
 
         if status == "released":
+            if date is None:
+                raise RuntimeError('No date specified for a released game')
+
             if ea_date and ea_date != date:
                 # the game used to be in early access
                 # if no dates are specified, let's import early access release date

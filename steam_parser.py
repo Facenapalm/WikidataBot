@@ -45,6 +45,7 @@ import re
 import argparse
 import os.path
 from datetime import datetime, UTC
+from time import sleep
 
 import pywikibot
 from pywikibot.data.sparql import SparqlQuery
@@ -896,10 +897,18 @@ def main(input_filename):
 
     # Process existing items
     for item_id in q_list:
-        try:
-            ExistingItemProcessor(item_id).process()
-        except RuntimeError as error:
-            print(f"{item_id}: {error}")
+        while True:
+            try:
+                ExistingItemProcessor(item_id).process()
+            except pywikibot.exceptions.APIError as error:
+                if error.code != "editconflict":
+                    raise
+                print(f"{item_id}: edit conflict, retrying")
+                sleep(1)
+                continue
+            except RuntimeError as error:
+                print(f"{item_id}: {error}")
+            break
 
     # Create new items
     for steam_id in s_list:

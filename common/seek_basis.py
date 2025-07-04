@@ -386,7 +386,9 @@ class SearchIDSeekerBot(BaseIDSeekerBot):
         """Implementation of BaseIDSeekerBot.parse_item() using search API."""
         self.matching_value = get_only_value(item, self.matching_property, self.matching_label)
 
-        if "en" in item.labels:
+        if not item.labels:
+            raise RuntimeError('no labels specified')
+        elif "en" in item.labels:
             lang = "en"
         else:
             # any language is better than none

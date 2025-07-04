@@ -693,6 +693,9 @@ class ItemProcessor():
             print(f"{self.steam_page.get_id()}: Added release date")
 
         elif status == "early access":
+            if date is None:
+                raise RuntimeError('No date specified for an early access game')
+
             # the game is in early access right now to be in early access
             data = (date, [early_access])
             self.add_claims_with_qualifiers("P577", "P3831", [data], "early access release date")

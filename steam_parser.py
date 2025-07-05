@@ -900,7 +900,7 @@ def main(input_filename):
         while True:
             try:
                 ExistingItemProcessor(item_id).process()
-            except pywikibot.exceptions.APIError as error:
+            except (pywikibot.exceptions.APIError, pywikibot.exceptions.OtherPageSaveError) as error:
                 if error.code != "editconflict":
                     raise
                 print(f"{item_id}: edit conflict, retrying")

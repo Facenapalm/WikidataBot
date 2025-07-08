@@ -50,7 +50,7 @@ from time import sleep
 import pywikibot
 from pywikibot.data.sparql import SparqlQuery
 
-from common.utils import get_only_value
+from common.utils import get_only_value, is_edit_conflict
 from common.data import descriptions_data
 
 title_replacements = [
@@ -901,11 +901,11 @@ def main(input_filename):
             try:
                 ExistingItemProcessor(item_id).process()
             except (pywikibot.exceptions.APIError, pywikibot.exceptions.OtherPageSaveError) as error:
-                if error.code != "editconflict":
-                    raise
-                print(f"{item_id}: edit conflict, retrying")
-                sleep(1)
-                continue
+                if is_edit_conflict(error):
+                    print(f"{item_id}: edit conflict, retrying")
+                    sleep(1)
+                    continue
+                raise
             except RuntimeError as error:
                 print(f"{item_id}: {error}")
             break

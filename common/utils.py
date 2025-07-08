@@ -22,6 +22,7 @@
 
 import re
 import pywikibot
+import pywikibot.exceptions
 from datetime import datetime, UTC
 from pywikibot import pagegenerators as pg
 
@@ -91,3 +92,11 @@ def parse_input_source(repo, source, query):
         with open(source, encoding="utf-8") as listfile:
             for line in listfile:
                 yield pywikibot.ItemPage(repo, line)
+
+def is_edit_conflict(exception):
+    """Check if current exception is caused by edit conflict."""
+    if instanceof(exception, pywikibot.exceptions.APIError):
+        return exception.code == 'editconflict'
+    if instanceof(exception, pywikibot.exceptions.OtherPageSaveError):
+        return 'editconflict' in str(exception.reason)
+    return False

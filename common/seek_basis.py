@@ -26,7 +26,7 @@ from typing import Optional, List
 from argparse import ArgumentParser
 
 from common.basis import BaseWikidataBot
-from common.utils import get_first_key, get_current_wbtime, parse_input_source, get_only_value
+from common.utils import get_first_key, get_current_wbtime, parse_input_source, get_only_value, process_edit_conflicts
 
 class BaseIDSeekerBot(BaseWikidataBot):
     """
@@ -197,7 +197,11 @@ class BaseIDSeekerBot(BaseWikidataBot):
                 claim.addQualifier(qualifier)
             if self.should_set_source:
                 claim.addSources(self.generate_matched_by_source())
-            item.addClaim(claim, summary=f"Add {self.database_label} based on {self.matching_label}")
+
+            process_edit_conflicts(
+                lambda: item.addClaim(claim, summary=f"Add {self.database_label} based on {self.matching_label}"),
+                item.title()
+            )
             print(f"{item.title()}: {self.database_label} set to `{entry_id}`")
             if self.output:
                 self.output.write(f"{item.title()}\n")
@@ -214,7 +218,10 @@ class BaseIDSeekerBot(BaseWikidataBot):
                     qualifier.setTarget(qualifier_value)
                     claim.addQualifier(qualifier)
 
-                item.addClaim(claim, summary=f"Add {self.database_label} (cross-linked with `{entry_id}`)")
+                process_edit_conflicts(
+                    lambda: item.addClaim(claim, summary=f"Add {self.database_label} (cross-linked with `{entry_id}`)"),
+                    item.title()
+                )
                 print(f"{item.title()}: {self.database_label} set to `{crosslink}` (cross-linked with `{entry_id}`)")
 
             if not (self.should_set_properties and additional_properties):
@@ -236,7 +243,10 @@ class BaseIDSeekerBot(BaseWikidataBot):
                     claim = pywikibot.Claim(self.repo, key)
                     claim.setTarget(value)
                     claim.addSources(self.generate_stated_in_source(entry_id))
-                    item.addClaim(claim, summary=f"Add {key_verbose} based on {self.database_label}")
+                    process_edit_conflicts(
+                        lambda: item.addClaim(claim, summary=f"Add {key_verbose} based on {self.database_label}"),
+                        item.title()
+                    )
                     print(f"{item.title()}: {key_verbose} set to `{value}`")
 
         except NotImplementedError as error:

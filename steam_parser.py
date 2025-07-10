@@ -50,7 +50,7 @@ from time import sleep
 import pywikibot
 from pywikibot.data.sparql import SparqlQuery
 
-from common.utils import get_only_value, is_edit_conflict
+from common.utils import get_only_value, process_edit_conflicts
 from common.data import descriptions_data
 
 title_replacements = [
@@ -588,7 +588,10 @@ class ItemProcessor():
         for value in values:
             qualifier = pywikibot.Claim(repo, prop)
             qualifier.setTarget(value)
-            claim.addQualifier(qualifier, summary=f"Add {typename} qualifier to Steam ID `{steam_id}`")
+            process_edit_conflicts(
+                lambda: claim.addQualifier(qualifier, summary=f"Add {typename} qualifier to Steam ID `{steam_id}`"),
+                steam_id
+            )
             print(f"{steam_id}: Added {typename} qualifier")
 
     def add_claims(self, prop, values, typename="claim", get_source="default"):
@@ -606,7 +609,10 @@ class ItemProcessor():
             claim.setTarget(value)
             if get_source:
                 claim.addSources(get_source())
-            self.item_page.addClaim(claim, summary=f"Add {typename} based on Steam page")
+            process_edit_conflicts(
+                lambda: self.item_page.addClaim(claim, summary=f"Add {typename} based on Steam page"),
+                self.steam_page.get_id()
+            )
             print(f"{self.steam_page.get_id()}: Added {typename}")
 
     def add_claims_with_update(self, prop, values, typename="claim", get_source="default", add_sources=False):
@@ -634,7 +640,10 @@ class ItemProcessor():
                 claim.setTarget(value)
                 if get_source:
                     claim.addSources(get_source())
-                self.item_page.addClaim(claim, summary=f"Add {typename} based on Steam page")
+                process_edit_conflicts(
+                    lambda: self.item_page.addClaim(claim, summary=f"Add {typename} based on Steam page"),
+                    self.steam_page.get_id()
+                )
                 print(f"{self.steam_page.get_id()}: Added {typename}")
 
     def add_claims_with_qualifiers(self, prop, qualifier_prop, values, typename="claim", get_source="default"):
@@ -657,7 +666,10 @@ class ItemProcessor():
                 claim.addQualifier(qualifier)
             if get_source:
                 claim.addSources(get_source())
-            self.item_page.addClaim(claim, summary=f"Add {typename} based on Steam page")
+            process_edit_conflicts(
+                lambda: self.item_page.addClaim(claim, summary=f"Add {typename} based on Steam page"),
+                self.steam_page.get_id()
+            )
             print(f"{self.steam_page.get_id()}: Added {typename}")
 
     def process_release_date(self, status, date, ea_date):
@@ -690,7 +702,10 @@ class ItemProcessor():
             claim = pywikibot.Claim(repo, prop)
             claim.setTarget(date)
             claim.addSources(self.steam_page.generate_source())
-            self.item_page.addClaim(claim, summary="Add release date based on Steam page")
+            process_edit_conflicts(
+                lambda: self.item_page.addClaim(claim, summary="Add release date based on Steam page"),
+                self.steam_page.get_id()
+            )
             print(f"{self.steam_page.get_id()}: Added release date")
 
         elif status == "early access":
@@ -897,18 +912,10 @@ def main(input_filename):
 
     # Process existing items
     for item_id in q_list:
-        while True:
-            try:
-                ExistingItemProcessor(item_id).process()
-            except (pywikibot.exceptions.APIError, pywikibot.exceptions.OtherPageSaveError) as error:
-                if is_edit_conflict(error):
-                    print(f"{item_id}: edit conflict, retrying")
-                    sleep(1)
-                    continue
-                raise
-            except RuntimeError as error:
-                print(f"{item_id}: {error}")
-            break
+        try:
+            ExistingItemProcessor(item_id).process()
+        except RuntimeError as error:
+            print(f"{item_id}: {error}")
 
     # Create new items
     for steam_id in s_list:

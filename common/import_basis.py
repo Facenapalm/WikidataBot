@@ -24,7 +24,7 @@ import pywikibot
 from argparse import ArgumentParser
 
 from common.basis import BaseWikidataBot
-from common.utils import get_only_value, get_current_wbtime, parse_input_source
+from common.utils import get_only_value, get_current_wbtime, parse_input_source, process_edit_conflicts
 
 class DataImporterBot(BaseWikidataBot):
     """
@@ -72,7 +72,10 @@ class DataImporterBot(BaseWikidataBot):
                     retrieved.setTarget(get_current_wbtime())
                     claim.addSources([stated_in, database_link, retrieved])
 
-                    item.addClaim(claim, summary=f'Add {label} based on {self.database_label}')
+                    process_edit_conflicts(
+                        lambda: item.addClaim(claim, summary=f'Add {label} based on {self.database_label}'),
+                        item.title()
+                    )
                     print(f'{item.title()}: added {label} `{self.get_verbose_value(value)}`')
         except RuntimeError as error:
             print(f'{item.title()}: {error}')

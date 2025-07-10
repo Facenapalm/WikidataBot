@@ -24,7 +24,7 @@ import pywikibot
 from argparse import ArgumentParser
 
 from common.basis import BaseWikidataBot
-from common.utils import parse_input_source
+from common.utils import parse_input_source, process_edit_conflicts
 
 class QualifyingBot(BaseWikidataBot):
     """
@@ -63,13 +63,14 @@ class QualifyingBot(BaseWikidataBot):
                     if qualifier_value is None:
                         qualifier = pywikibot.Claim(self.repo, self.qualifier_property)
                         qualifier.setSnakType('novalue')
-                        claim.addQualifier(qualifier, summary=f"Add qualifier to {self.base_property_name} `{base_value}`")
-                        print(f"{base_value}: qualifier set to None")
                     else:
                         qualifier = pywikibot.Claim(self.repo, self.qualifier_property)
                         qualifier.setTarget(qualifier_value)
-                        claim.addQualifier(qualifier, summary=f"Add qualifier to {self.base_property_name} `{base_value}`")
-                        print(f"{base_value}: qualifier set to `{self.get_verbose_value(qualifier_value)}`")
+                    process_edit_conflicts(
+                        lambda: claim.addQualifier(qualifier, summary=f"Add qualifier to {self.base_property_name} `{base_value}`"),
+                        item.title()
+                    )
+                    print(f"{base_value}: qualifierset to `{self.get_verbose_value(qualifier_value)}` ({item.title()})")
             except NotImplementedError as error:
                 raise error
             except RuntimeError as error:

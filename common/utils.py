@@ -23,6 +23,7 @@
 import re
 import pywikibot
 import pywikibot.exceptions
+from time import sleep
 from datetime import datetime, UTC
 from pywikibot import pagegenerators as pg
 
@@ -95,8 +96,23 @@ def parse_input_source(repo, source, query):
 
 def is_edit_conflict(exception):
     """Check if current exception is caused by edit conflict."""
-    if instanceof(exception, pywikibot.exceptions.APIError):
+    if isinstance(exception, pywikibot.exceptions.APIError):
         return exception.code == 'editconflict'
-    if instanceof(exception, pywikibot.exceptions.OtherPageSaveError):
-        return 'editconflict' in str(exception.reason)
+    if isinstance(exception, pywikibot.exceptions.OtherPageSaveError):
+        return 'edit-conflict' in str(exception.reason)
     return False
+
+def process_edit_conflicts(callback, comment=None):
+    while True:
+        try:
+            callback()
+        except (pywikibot.exceptions.APIError, pywikibot.exceptions.OtherPageSaveError) as error:
+            if not is_edit_conflict(error):
+                raise
+            if comment is None:
+                print("edit conflict, retrying")
+            else:
+                print(f"{comment}: edit conflict, retrying")
+            sleep(.5)
+            continue
+        break

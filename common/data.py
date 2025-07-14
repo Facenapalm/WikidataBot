@@ -50,7 +50,7 @@ vg_descriptions_data = [
     ("nn", "dataspel", "dataspel frå {}"),
     ("oc", "videojòc", "videojòc de {}"),
     ("pl", "gra komputerowa", "gra komputerowa z {} roku"),
-    ("pt", "vídeojogo", "vídeojogo de {}"),
+    ("pt", "videojogo", "videojogo de {}"),
     ("pt-br", "jogo eletrônico", "jogo eletrônico de {}"),
     ("ro", "joc video", "joc video din {}"),
     ("ru", "компьютерная игра", "компьютерная игра {} года"),

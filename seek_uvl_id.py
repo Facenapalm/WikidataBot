@@ -45,14 +45,20 @@ class UVLSeeker(SearchIDSeekerBot):
             ( 'fname', query ),
             ( 'ftag', 'steampowered' )
         ]
-        response = requests.post('https://www.uvlist.net/gamesearch/', params=params, headers=self.headers)
+        try:
+            response = requests.post('https://www.uvlist.net/gamesearch/', params=params, headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         if not response:
             raise RuntimeError(f'Query `{query}` resulted in {response.status_code}: {response.reason}')
 
         return re.findall(r'<td><a href=[\'"]/game-(\d+)-', response.text)
 
     def parse_entry(self, entry_id):
-        response = requests.get(f'https://www.uvlist.net/game-{entry_id}', headers=self.headers)
+        try:
+            response = requests.get(f'https://www.uvlist.net/game-{entry_id}', headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         if not response:
             # print(f'WARNING: video game `{entry_id}` returned {response.status_code}: {response.reason}')
             return {}

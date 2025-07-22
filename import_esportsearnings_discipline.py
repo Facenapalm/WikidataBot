@@ -57,7 +57,10 @@ class EsportsEarningsBot(DataImporterBot):
         self.esports = pywikibot.ItemPage(self.repo, 'Q300920')
 
     def parse_entry(self, entry_id):
-        response = requests.get(f'https://www.esportsearnings.com/players/{entry_id}', headers=self.headers)
+        try:
+            response = requests.get(f'https://www.esportsearnings.com/players/{entry_id}', headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         if not response:
             raise RuntimeError(f"Can't download player entry {entry_id}")
 

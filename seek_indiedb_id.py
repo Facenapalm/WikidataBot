@@ -38,7 +38,10 @@ class IndieDBSeekerBot(DirectIDSeekerBot):
     def check_slug(self, slug):
         if slug is None:
             return False
-        response = requests.get(f"https://www.indiedb.com/games/{slug}", headers=self.headers)
+        try:
+            response = requests.get(f"https://www.indiedb.com/games/{slug}", headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         time.sleep(2)
         if response:
             return "NOT available on IndieDB" not in response.text

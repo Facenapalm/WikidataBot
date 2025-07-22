@@ -110,10 +110,10 @@ class RawgSeekerBot(SearchIDSeekerBot):
     def request(self, url, params={}, retries=5):
         try:
             params["key"] = self.api_key
-            response = requests.get(url, params=params, headers=self.headers)
+            response = requests.get(url, params=params, headers=self.headers, timeout=10)
             response.raise_for_status()
             return response.json()
-        except requests.exceptions.HTTPError as error:
+        except (requests.exceptions.HTTPError, requests.exceptions.Timeout) as error:
             if retries <= 0:
                 raise
             print("WARNING: request failed; sleeping and retrying...")

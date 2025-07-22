@@ -90,7 +90,10 @@ class CoOptimusSeekerBot(SearchIDSeekerBot):
             ( "system", "4" ),
             ( "page", "1" )
         ]
-        response = requests.get('https://www.co-optimus.com/ajax/ajax_games.php', params=params, headers=self.headers)
+        try:
+            response = requests.get('https://www.co-optimus.com/ajax/ajax_games.php', params=params, headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         if response:
             return re.findall(r'<tr class="result_row" id="(\d+)"', response.text)
         else:

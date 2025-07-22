@@ -52,7 +52,10 @@ class VKPlaySeekerBot(SearchIDSeekerBot):
             "limit": max_results
         }
 
-        response = requests.get('https://api.vkplay.ru/pc/v3/search/', params=params, headers=self.headers)
+        try:
+            response = requests.get('https://api.vkplay.ru/pc/v3/search/', params=params, headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         if response:
             return [item["extra"]["slug"] for item in response.json()["items"]]
         else:
@@ -60,7 +63,10 @@ class VKPlaySeekerBot(SearchIDSeekerBot):
 
     def parse_entry(self, entry_id):
         result = ""
-        response = requests.get(f"https://api.vkplay.ru/pc/v3/game/{entry_id}/", headers=self.headers)
+        try:
+            response = requests.get(f"https://api.vkplay.ru/pc/v3/game/{entry_id}/", headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         try:
             if not response:
                 raise RuntimeError("can't get info")

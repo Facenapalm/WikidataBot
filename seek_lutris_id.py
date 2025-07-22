@@ -65,7 +65,10 @@ class LutrisBot():
     }
 
     def parse_entry(self, entry_id):
-        response = requests.get(f"https://lutris.net/games/{entry_id}", headers=self.headers)
+        try:
+            response = requests.get(f"https://lutris.net/games/{entry_id}", headers=self.headers, timeout=20)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         time.sleep(1)
         if not response:
             raise RuntimeError(f"can't get info for `{entry_id}` ({response.status_code})")
@@ -99,7 +102,10 @@ class LutrisSeekerBot(LutrisBot, SearchIDSeekerBot):
             "q": query,
             "unpublished-filter": "on"
         }
-        response = requests.get("https://lutris.net/games", params=params, headers=self.headers)
+        try:
+            response = requests.get("https://lutris.net/games", params=params, headers=self.headers, timeout=20)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         time.sleep(1)
         if not response:
             raise RuntimeError(f"can't get search results for query `{query}`. Status code: {response.status_code}")

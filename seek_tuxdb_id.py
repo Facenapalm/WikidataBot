@@ -44,7 +44,10 @@ class TuxDBSeekerBot(SearchIDSeekerBot):
             'submit': ( None, 'Submit' ),
         }
         sleep(0.5)
-        response = requests.post('https://tuxdb.com/section/db&page=0&fwd=go', files=files, headers=self.headers)
+        try:
+            response = requests.post('https://tuxdb.com/section/db&page=0&fwd=go', files=files, headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         if not response:
             raise RuntimeError(f'Query `{query}` resulted in {response.status_code}: {response.reason}')
 
@@ -52,7 +55,10 @@ class TuxDBSeekerBot(SearchIDSeekerBot):
 
     def parse_entry(self, entry_id):
         sleep(0.5)
-        response = requests.get(f'https://tuxdb.com/game/{entry_id}', headers=self.headers)
+        try:
+            response = requests.get(f'https://tuxdb.com/game/{entry_id}', headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         if not response:
             raise RuntimeError(f"Video game `{entry_id}` returned {response.status_code}: {response.reason}")
 

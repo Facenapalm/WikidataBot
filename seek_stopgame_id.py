@@ -41,14 +41,20 @@ class StopGameSeekerBot(SearchIDSeekerBot):
         params = [
             ( "term", query ),
         ]
-        response = requests.get('https://stopgame.ru/ajax/search/games', params=params, headers=self.headers)
+        try:
+            response = requests.get('https://stopgame.ru/ajax/search/games', params=params, headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         if response:
             return [x['url'][6:] for x in response.json()['results'] if x['url'].startswith('/game/')]
         else:
             raise RuntimeError(f"can't get search results for query `{query}`. Status code: {response.status_code}")
 
     def parse_entry(self, entry_id):
-        response = requests.get('https://stopgame.ru/game/' + entry_id, headers=self.headers)
+        try:
+            response = requests.get('https://stopgame.ru/game/' + entry_id, headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         if not response:
             print(f"WARNING: can't get info for game `{entry_id}`")
             return {}

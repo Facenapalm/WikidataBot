@@ -51,7 +51,10 @@ class HLTBSeekerBot(SearchIDSeekerBot):
             return [str(entry.game_id) for entry in search_results][:max_results]
 
     def parse_entry(self, entry_id):
-        response = requests.get(f"https://howlongtobeat.com/game/{entry_id}", headers=self.headers)
+        try:
+            response = requests.get(f"https://howlongtobeat.com/game/{entry_id}", headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         if not response:
             raise RuntimeError(f"can't get info for entry `{entry_id}`")
 

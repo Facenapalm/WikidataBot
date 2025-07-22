@@ -47,7 +47,10 @@ class VGTimesSeekerBot(SearchIDSeekerBot):
             'ismobile': '1',
             'what': '1',
         }
-        response = requests.post('https://vgtimes.ru/engine/ajax/search.php', params=params, headers=self.headers)
+        try:
+            response = requests.post('https://vgtimes.ru/engine/ajax/search.php', params=params, headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         if not response:
             raise RuntimeError(f"can't get search results for query `{query}`. Status code: {response.status_code}")
         json = response.json()
@@ -62,7 +65,10 @@ class VGTimesSeekerBot(SearchIDSeekerBot):
         return result
 
     def parse_entry(self, entry_id):
-        response = requests.get(f'https://vgtimes.ru/games/{entry_id}/', headers=self.headers)
+        try:
+            response = requests.get(f'https://vgtimes.ru/games/{entry_id}/', headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         if not response:
             print(f"WARNING: can't get info for game `{entry_id}`")
             return {}

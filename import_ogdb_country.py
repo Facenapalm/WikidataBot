@@ -156,7 +156,10 @@ class OGDBBot(DataImporterBot):
         }
 
     def parse_entry(self, ogdb_id):
-        response = requests.get(f"https://ogdb.eu/index.php?section=title&titleid={ogdb_id}", headers=self.headers)
+        try:
+            response = requests.get(f"https://ogdb.eu/index.php?section=title&titleid={ogdb_id}", headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         if not response:
             raise RuntimeError(f"can't download game entry {ogdb_id}")
         html = response.text

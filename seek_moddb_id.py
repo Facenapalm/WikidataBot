@@ -190,7 +190,10 @@ class ModDBSeekerBot(SearchIDSeekerBot):
             ( "q", query ),
             ( "l", max_results ),
         ]
-        response = requests.get("https://www.moddb.com/html/scripts/autocomplete.php", params=params, headers=self.headers)
+        try:
+            response = requests.get("https://www.moddb.com/html/scripts/autocomplete.php", params=params, headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         time.sleep(2)
         if response:
             return re.findall(r'href="/games/([^"]+)"', response.text)
@@ -198,7 +201,10 @@ class ModDBSeekerBot(SearchIDSeekerBot):
             raise RuntimeError(f"can't get search results for query `{query}`. Status code: {response.status_code}")
 
     def parse_entry(self, entry_id):
-        response = requests.get(f"https://www.moddb.com/games/{entry_id}", headers=self.headers)
+        try:
+            response = requests.get(f"https://www.moddb.com/games/{entry_id}", headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         time.sleep(2)
         if not response:
             print(f"WARNING: can't get info for game `{entry_id}`")

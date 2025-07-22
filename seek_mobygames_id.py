@@ -80,10 +80,14 @@ class MobyGamesSeekerBot(DirectIDSeekerBot):
 
     def seek_database_entry(self):
         sleep(1)
-        response = requests.post(
-            f'https://api.mobygames.com/v2/graphql?api_key={self.api_key}',
-            headers=self.headers,
-            json=self.make_query())
+        try:
+            response = requests.post(
+                f'https://api.mobygames.com/v2/graphql?api_key={self.api_key}',
+                headers=self.headers,
+                json=self.make_query(),
+                timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         if not response:
             raise RuntimeError(f"can't get info for game `{self.matching_value}`. Status code: {response.status_code}")
         games = response.json()['data']['games']

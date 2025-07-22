@@ -240,7 +240,10 @@ class ArcadeHistoryQualifyingBot(QualifyingBot):
             ( "page", "detail" ),
             ( "id", base_value ),
         ]
-        response = requests.get("https://www.arcade-history.com/", params=params, headers=self.headers)
+        try:
+            response = requests.get("https://www.arcade-history.com/", params=params, headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         if not response:
             raise RuntimeError(f"can't get info ({response.status_code})")
         media_type = re.search(r"<h2>.*?<span style='color:lightgrey'>(.+?)</span>", response.text).group(1)

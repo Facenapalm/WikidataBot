@@ -64,7 +64,10 @@ class TGDBQualifyingBot(QualifyingBot):
         params = [
             ( 'id', base_value )
         ]
-        response = requests.get('https://thegamesdb.net/game.php', params=params, headers=self.headers)
+        try:
+            response = requests.get('https://thegamesdb.net/game.php', params=params, headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         if not response:
             raise RuntimeError(f"can't get info ({response.status_code})")
         html = response.text

@@ -45,7 +45,10 @@ class SteamGridDBSeekerBot(DirectIDSeekerBot):
             raise RuntimeError("SteamGridDB API key unspecified") from error
 
     def seek_database_entry(self):
-        response = requests.get('https://www.steamgriddb.com/api/v2/games/steam/' + self.matching_value, headers=self.headers)
+        try:
+            response = requests.get('https://www.steamgriddb.com/api/v2/games/steam/' + self.matching_value, headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         if not response:
             raise RuntimeError(f"can't get info for game `{self.matching_value}`. Status code: {response.status_code}")
         hits = response.json()

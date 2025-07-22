@@ -75,7 +75,10 @@ class PlayGroundSeekerBot(SearchIDSeekerBot):
             ( "query", query ),
             ( "include_addons", 0 )
         ]
-        response = requests.get('https://www.playground.ru/api/game.search', params=params, headers=self.headers)
+        try:
+            response = requests.get('https://www.playground.ru/api/game.search', params=params, headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         if response:
             return [x['slug'] for x in response.json()]
         else:
@@ -83,7 +86,7 @@ class PlayGroundSeekerBot(SearchIDSeekerBot):
 
     def parse_entry(self, entry_id):
         try:
-            response = requests.get(f'https://www.playground.ru/shop/{entry_id}/', headers=self.headers)
+            response = requests.get(f'https://www.playground.ru/shop/{entry_id}/', headers=self.headers, timeout=10)
             if not response:
                 raise RuntimeError("can't download info")
             html = response.text
@@ -127,7 +130,7 @@ class PlayGroundSeekerBot(SearchIDSeekerBot):
                 result[store_data["property"]] = property_value
 
             return result
-        except RuntimeError as error:
+        except (RuntimeError, requests.exceptions.Timeout) as error:
             print(f"WARNING: {error} for game `{entry_id}`")
             return {}
 

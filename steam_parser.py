@@ -269,7 +269,10 @@ class SteamPage():
             self.cache_used = True
         else:
             url = f"https://store.steampowered.com/app/{steam_id}/"
-            response = requests.get(url, headers=self.headers)
+            try:
+                response = requests.get(url, headers=self.headers, timeout=10)
+            except requests.exceptions.Timeout:
+                raise RuntimeError('request timed out')
             if not response:
                 raise RuntimeError(f"Can't access page `{steam_id}`. Status code: {response.status_code}")
             if extract_steam_id(response.url) != steam_id:

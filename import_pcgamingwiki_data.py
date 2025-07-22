@@ -18,7 +18,10 @@ class PCGamingWikiPage():
             'format': 'json',
             'formatversion': 2,
         }
-        response = requests.get('https://www.pcgamingwiki.com/w/api.php', params=params)
+        try:
+            response = requests.get('https://www.pcgamingwiki.com/w/api.php', params=params, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         try:
             page = response.json()['query']['pages'][0]
 
@@ -31,7 +34,10 @@ class PCGamingWikiPage():
     @staticmethod
     def from_steam_appid(appid):
         params = { 'appid': appid }
-        response = requests.get('https://www.pcgamingwiki.com/api/appid.php', params=params)
+        try:
+            response = requests.get('https://www.pcgamingwiki.com/api/appid.php', params=params, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         html = response.text
         if "No such AppID" in html:
             raise RuntimeError(f'no PCGamingWiki entries are linked to Steam application ID `{appid}`')

@@ -41,7 +41,10 @@ class IndieMagSeekerBot(SearchIDSeekerBot):
         )
 
     def search(self, query, max_results=None):
-        response = requests.get(f'https://www.indiemag.fr/search/node/{query}', headers=self.headers)
+        try:
+            response = requests.get(f'https://www.indiemag.fr/search/node/{query}', headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         if not response:
             print(f"WARNING: query `{query}` resulted in {response.status_code}: {response.reason}")
             return []
@@ -49,7 +52,10 @@ class IndieMagSeekerBot(SearchIDSeekerBot):
         return re.findall(r'<div class="search-result">\s*<div class="vignette apercu">\s*<div class="image">\s*<a href="/jeux/([a-z0-9\-]+)"', html)
 
     def parse_entry(self, entry_id):
-        response = requests.get(f'https://www.indiemag.fr/jeux/{entry_id}', headers=self.headers)
+        try:
+            response = requests.get(f'https://www.indiemag.fr/jeux/{entry_id}', headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         if not response:
             print(f"WARNING: video game `{entry_id}` returned {response.status_code}: {response.reason}")
             return {}

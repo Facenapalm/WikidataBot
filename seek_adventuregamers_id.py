@@ -66,14 +66,20 @@ class AdventureGamersSeekerBot(SearchIDSeekerBot):
         params = [
             ( 'keywords', query ),
         ]
-        response = requests.post('https://adventuregamers.com/games/search', params=params, headers=self.headers)
+        try:
+            response = requests.post('https://adventuregamers.com/games/search', params=params, headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         if not response:
             raise RuntimeError(f'Query `{query}` resulted in {response.status_code}: {response.reason}')
 
         return re.findall(r'<a href="/games/view/(\d+)">Full game details</a>', response.text)
 
     def parse_entry(self, entry_id):
-        response = requests.get(f'https://adventuregamers.com/games/view/{entry_id}', headers=self.headers)
+        try:
+            response = requests.get(f'https://adventuregamers.com/games/view/{entry_id}', headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         if not response:
             raise RuntimeError(f'Video game `{entry_id}` returned {response.status_code}: {response.reason}')
         html = response.text

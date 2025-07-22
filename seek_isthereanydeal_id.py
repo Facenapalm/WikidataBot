@@ -37,7 +37,10 @@ class IsThereAnyDealSeekerBot(DirectIDSeekerBot):
         )
 
     def seek_database_entry(self):
-        response = requests.head(f'https://isthereanydeal.com/steam/app/{self.matching_value}/', headers=self.headers)
+        try:
+            response = requests.head(f'https://isthereanydeal.com/steam/app/{self.matching_value}/', headers=self.headers, timeout=10)
+        except requests.exceptions.Timeout:
+            raise RuntimeError('request timed out')
         if response.status_code != 302 or 'location' not in response.headers:
             raise RuntimeError(f"can't get info for game `{self.matching_value}`. Status code: {response.status_code}")
         location = response.headers['location']
